@@ -86,6 +86,7 @@
 
   /* BOTÕES DE AÇÃO */
   .acoes-topo { display: flex; gap: 8px; margin-bottom: 20px; }
+  .acoes-topo .btn-imprimir { flex: 1; }
   .btn-add {
     display: flex; align-items: center; justify-content: center; gap: 6px;
     flex: 1; padding: 10px;
@@ -229,6 +230,76 @@
   .vazio { text-align: center; padding: 56px 20px; color: #44446a; }
   .vazio-icone { font-size: 52px; margin-bottom: 14px; }
   .vazio p { font-size: 15px; line-height: 1.5; }
+
+  /* BOTÕES MINI (backup / salvos) */
+  .acoes-mini { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .acoes-mini button {
+    flex: 1; min-width: 90px; padding: 8px 6px;
+    background: transparent; border: 1px solid #2a2a44;
+    border-radius: 8px; color: #8888b0; font-size: 12px;
+    cursor: pointer; transition: background .2s;
+  }
+  .acoes-mini button:hover { background: #18182c; color: #b0b0d0; }
+
+  /* TELA DE RELATÓRIO */
+  .rel-overlay {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: #0d0d17; overflow-y: auto; padding: 14px;
+  }
+  .rel-overlay.open { display: block; }
+  .rel-topo {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px; margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .rel-topo-acoes { display: flex; gap: 8px; }
+  .rel-btn-voltar {
+    background: #20203a; border: none; border-radius: 8px;
+    color: #b0b0d0; font-size: 14px; padding: 9px 14px; cursor: pointer;
+  }
+  .rel-btn-salvar, .rel-btn-pdf {
+    border: none; border-radius: 8px; font-size: 13px; font-weight: 600;
+    padding: 9px 12px; cursor: pointer; color: #fff;
+  }
+  .rel-btn-salvar { background: #16a34a; }
+  .rel-btn-pdf { background: #7c3aed; }
+  .rel-folha {
+    background: #fff; color: #111; border-radius: 10px;
+    padding: 20px; max-width: 760px; margin: 0 auto;
+  }
+  .rel-folha h1 { font-size: 19px; margin: 0 0 2px; color: #4c1d95; }
+  .rel-folha .rsub { font-size: 13px; color: #555; margin-bottom: 6px; }
+  .rel-folha .resumo-rel { font-size: 13px; color: #6d28d9; font-weight: bold; margin-bottom: 14px; }
+  .rel-folha table { border-collapse: collapse; width: 100%; font-size: 11px; }
+  .rel-folha th, .rel-folha td { border: 1px solid #bbb; padding: 5px 6px; text-align: center; }
+  .rel-folha th { background: #6d28d9; color: #fff; font-size: 10px; }
+  .rel-folha th.loja, .rel-folha th.prod, .rel-folha td.loja, .rel-folha td.prod { text-align: left; }
+  .rel-folha td.loja { font-weight: bold; white-space: nowrap; }
+  .rel-folha td.prod { min-width: 120px; }
+  .rel-folha .cel { color: #16a34a; font-weight: bold; font-size: 13px; }
+  .rel-folha tr:nth-child(even) td { background: #f3f0fb; }
+  .rel-folha .tab-sem td.dia { text-align: left; font-weight: bold; }
+  .rel-folha .data-min { font-weight: normal; color: #888; font-size: 10px; }
+  .rel-folha tr.total td { background: #ede9fe; font-weight: bold; }
+  .rel-folha .lista-salvos { display: flex; flex-direction: column; gap: 8px; }
+  .rel-folha .item-salvo {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px;
+    font-size: 13px;
+  }
+  .rel-folha .acoes-salvo { display: flex; gap: 6px; flex-shrink: 0; }
+  .rel-folha .acoes-salvo button {
+    border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px;
+    cursor: pointer; background: #6d28d9; color: #fff;
+  }
+  .rel-folha .acoes-salvo button.del { background: #dc2626; }
+
+  @media print {
+    body * { visibility: hidden; }
+    .rel-overlay, .rel-overlay * { visibility: visible; }
+    .rel-overlay { position: absolute; inset: 0; padding: 0; background: #fff; }
+    .no-print { display: none !important; }
+    .rel-folha { box-shadow: none; border-radius: 0; }
+  }
 </style>
 </head>
 <body>
@@ -247,9 +318,16 @@
 
 <div class="resumo" id="resumo"></div>
 
+<button class="btn-add" onclick="abrirModal()" style="width:100%;margin-bottom:8px">＋ Adicionar produto</button>
 <div class="acoes-topo">
-  <button class="btn-add" onclick="abrirModal()">＋ Adicionar produto</button>
-  <button class="btn-imprimir" onclick="imprimir()" title="Imprimir ou salvar em PDF">🖨️ Imprimir / PDF</button>
+  <button class="btn-imprimir" onclick="relatorioDia()" title="Relatório do dia">📄 Relatório do dia</button>
+  <button class="btn-imprimir" onclick="relatorioSemana()" title="Relatório da semana">📅 Relatório da semana</button>
+</div>
+<div class="acoes-mini">
+  <button onclick="verRelatoriosSalvos()">🗂️ Relatórios salvos</button>
+  <button onclick="fazerBackup()">💾 Backup</button>
+  <button onclick="document.getElementById('inp-restaurar').click()">📂 Restaurar</button>
+  <input type="file" id="inp-restaurar" accept=".json" style="display:none" onchange="restaurarBackup(this)">
 </div>
 
 <div id="lista"></div>
@@ -274,6 +352,19 @@
       <button class="btn-salvar" id="btn-salvar" onclick="salvarProduto()">Adicionar</button>
     </div>
   </div>
+</div>
+
+<!-- TELA DE RELATÓRIO -->
+<div class="rel-overlay" id="rel-overlay">
+  <div class="rel-topo no-print">
+    <button class="rel-btn-voltar" onclick="fecharRelatorio()">← Voltar</button>
+    <div class="rel-topo-acoes">
+      <button class="rel-btn-salvar" onclick="salvarRelatorioAqui()">💾 Salvar aqui</button>
+      <button class="rel-btn-pdf" onclick="salvarRelatorioPDF()">🖨️ Salvar em PDF</button>
+    </div>
+  </div>
+  <input type="hidden" id="rel-titulo-salvo">
+  <div class="rel-folha" id="rel-corpo"></div>
 </div>
 
 <script>
@@ -484,70 +575,166 @@ document.getElementById('inp-nome').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') document.getElementById('inp-loja').focus();
 });
 
-// --- IMPRIMIR / PDF: monta uma tabela como o documento original ---
-function imprimir() {
-  const d = diaAtual();
-  const k = chave(d);
-  const dados = carregar(k);
-  if (dados.length === 0) {
-    alert('Nenhum produto para imprimir neste dia.');
-    return;
-  }
-  const dataTxt = DIAS_SEMANA[d.getDay()] + ', ' + d.getDate() + ' de ' + MESES[d.getMonth()] + ' de ' + d.getFullYear();
+// ============ RELATÓRIOS ============
+function statsDia(dados) {
+  let feitos = 0, possiveis = 0, completos = 0;
+  dados.forEach(p => {
+    const itens = itensDoProduto(p.loja);
+    const m = itens.filter(c => p.canais && p.canais[c.id]).length;
+    feitos += m; possiveis += itens.length;
+    if (m === itens.length) completos++;
+  });
+  return { produtos: dados.length, feitos, possiveis, completos };
+}
 
-  // Cabeçalhos: todos os locais possíveis (passo da loja vira coluna "1º passo")
+// Relatório do DIA (tabela tipo o documento original)
+function relatorioDia() {
+  const d = diaAtual();
+  const dados = carregar(chave(d));
+  if (dados.length === 0) { alert('Nenhum produto neste dia para gerar relatório.'); return; }
+  const dataTxt = DIAS_SEMANA[d.getDay()] + ', ' + d.getDate() + ' de ' + MESES[d.getMonth()] + ' de ' + d.getFullYear();
   const colunas = ['1º passo', ...CANAIS.map(c => c.nome)];
 
   let linhas = '';
   dados.forEach(p => {
     const passo = PASSOS_LOJA[p.loja];
     const can = p.canais || {};
-    let tds = '';
-    // 1º passo
-    tds += `<td class="cel">${passo && can[passo.id] ? '✔' : ''}</td>`;
-    // demais canais
-    CANAIS.forEach(c => {
-      tds += `<td class="cel">${can[c.id] ? '✔' : ''}</td>`;
-    });
-    linhas += `<tr>
-      <td class="loja">${LOJAS[p.loja]||p.loja}</td>
-      <td class="prod">${escapar(p.nome)}</td>
-      ${tds}
-    </tr>`;
+    let tds = `<td class="cel">${passo && can[passo.id] ? '✔' : ''}</td>`;
+    CANAIS.forEach(c => { tds += `<td class="cel">${can[c.id] ? '✔' : ''}</td>`; });
+    linhas += `<tr><td class="loja">${LOJAS[p.loja]||p.loja}</td><td class="prod">${escapar(p.nome)}</td>${tds}</tr>`;
   });
+  const thead = '<th class="loja">Loja</th><th class="prod">Produto</th>' + colunas.map(c => `<th>${c}</th>`).join('');
+  const s = statsDia(dados);
 
-  const thead = '<th class="loja">Loja</th><th class="prod">Produto</th>' +
-    colunas.map(c => `<th>${c}</th>`).join('');
+  const corpo = `<h1>Relatório do dia</h1>
+    <div class="rsub">${dataTxt}</div>
+    <div class="resumo-rel">${s.produtos} produtos · ${s.feitos}/${s.possiveis} postagens · ${s.completos} concluídos</div>
+    <table><thead><tr>${thead}</tr></thead><tbody>${linhas}</tbody></table>`;
+  abrirRelatorio('Relatório do dia — ' + dataTxt, corpo);
+}
 
-  const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
-  <title>Postagens - ${dataTxt}</title>
-  <style>
-    * { box-sizing: border-box; }
-    body { font-family: Arial, sans-serif; margin: 24px; color: #111; }
-    h1 { font-size: 18px; margin: 0 0 2px; }
-    .sub { font-size: 13px; color: #555; margin-bottom: 16px; }
-    table { border-collapse: collapse; width: 100%; font-size: 11px; }
-    th, td { border: 1px solid #999; padding: 5px 6px; text-align: center; }
-    th { background: #6d28d9; color: #fff; font-size: 10px; }
-    th.loja, th.prod, td.loja, td.prod { text-align: left; }
-    td.loja { font-weight: bold; white-space: nowrap; }
-    td.prod { min-width: 130px; }
-    .cel { font-size: 13px; color: #16a34a; font-weight: bold; }
-    tr:nth-child(even) td { background: #f3f0fb; }
-    @media print { body { margin: 8px; } }
-  </style></head><body>
-    <h1>Controle de Postagens</h1>
-    <div class="sub">${dataTxt}</div>
-    <table>
-      <thead><tr>${thead}</tr></thead>
+// Relatório da SEMANA (segunda a domingo do dia exibido)
+function relatorioSemana() {
+  const base = diaAtual();
+  // segunda-feira da semana
+  const ini = new Date(base);
+  const dow = (ini.getDay() + 6) % 7; // 0 = segunda
+  ini.setDate(ini.getDate() - dow);
+  const fim = new Date(ini); fim.setDate(ini.getDate() + 6);
+  const fmt = x => x.getDate() + '/' + (x.getMonth()+1);
+  const periodo = fmt(ini) + ' a ' + fmt(fim) + '/' + fim.getFullYear();
+
+  let linhas = '', totProd=0, totFeitos=0, totPoss=0, totCompl=0, temAlgo=false;
+  for (let i=0;i<7;i++){
+    const d = new Date(ini); d.setDate(ini.getDate()+i);
+    const dados = carregar(chave(d));
+    const s = statsDia(dados);
+    if (s.produtos>0) temAlgo=true;
+    totProd+=s.produtos; totFeitos+=s.feitos; totPoss+=s.possiveis; totCompl+=s.completos;
+    const pct = s.possiveis? Math.round(s.feitos/s.possiveis*100):0;
+    linhas += `<tr>
+      <td class="dia">${DIAS_SEMANA[d.getDay()].replace('-feira','')}<br><span class="data-min">${fmt(d)}</span></td>
+      <td>${s.produtos||'-'}</td>
+      <td>${s.produtos? s.feitos+'/'+s.possiveis : '-'}</td>
+      <td>${s.produtos? pct+'%':'-'}</td>
+      <td class="cel">${s.completos||'-'}</td>
+    </tr>`;
+  }
+  if (!temAlgo){ alert('Nenhum produto registrado nesta semana.'); return; }
+  const pctTot = totPoss? Math.round(totFeitos/totPoss*100):0;
+  linhas += `<tr class="total"><td>TOTAL</td><td>${totProd}</td><td>${totFeitos}/${totPoss}</td><td>${pctTot}%</td><td>${totCompl}</td></tr>`;
+
+  const corpo = `<h1>Relatório da semana</h1>
+    <div class="rsub">${periodo}</div>
+    <div class="resumo-rel">${totProd} produtos na semana · ${totFeitos}/${totPoss} postagens · ${totCompl} concluídos</div>
+    <table class="tab-sem">
+      <thead><tr><th>Dia</th><th>Produtos</th><th>Postagens</th><th>%</th><th>Concluídos</th></tr></thead>
       <tbody>${linhas}</tbody>
-    </table>
-    <script>window.onload = function(){ window.print(); }<\/script>
-  </body></html>`;
+    </table>`;
+  abrirRelatorio('Relatório da semana — ' + periodo, corpo);
+}
 
-  const w = window.open('', '_blank');
-  w.document.write(html);
-  w.document.close();
+// Abre o relatório numa tela dentro do app (com botões Salvar aqui / PDF)
+function abrirRelatorio(titulo, corpoHtml) {
+  document.getElementById('rel-titulo-salvo').value = titulo;
+  document.getElementById('rel-corpo').innerHTML = corpoHtml;
+  document.getElementById('rel-overlay').classList.add('open');
+}
+function fecharRelatorio() {
+  document.getElementById('rel-overlay').classList.remove('open');
+}
+function salvarRelatorioPDF() { window.print(); }
+
+function salvarRelatorioAqui() {
+  const titulo = document.getElementById('rel-titulo-salvo').value;
+  const html = document.getElementById('rel-corpo').innerHTML;
+  const lista = JSON.parse(localStorage.getItem('relatorios_salvos') || '[]');
+  lista.unshift({ titulo, html, em: Date.now() });
+  localStorage.setItem('relatorios_salvos', JSON.stringify(lista));
+  alert('✅ Relatório salvo no app! Veja em "Relatórios salvos".');
+}
+
+function verRelatoriosSalvos() {
+  const lista = JSON.parse(localStorage.getItem('relatorios_salvos') || '[]');
+  if (lista.length === 0) { alert('Você ainda não salvou nenhum relatório.'); return; }
+  let html = '<h1>Relatórios salvos</h1><div class="lista-salvos">';
+  lista.forEach((r, i) => {
+    const dt = new Date(r.em);
+    html += `<div class="item-salvo">
+      <span>${escapar(r.titulo)}</span>
+      <span class="acoes-salvo">
+        <button onclick="abrirSalvo(${i})">Abrir</button>
+        <button onclick="excluirSalvo(${i})" class="del">Excluir</button>
+      </span>
+    </div>`;
+  });
+  html += '</div>';
+  document.getElementById('rel-titulo-salvo').value = 'Relatórios salvos';
+  document.getElementById('rel-corpo').innerHTML = html;
+  document.getElementById('rel-overlay').classList.add('open');
+}
+function abrirSalvo(i) {
+  const lista = JSON.parse(localStorage.getItem('relatorios_salvos') || '[]');
+  if (lista[i]) abrirRelatorio(lista[i].titulo, lista[i].html);
+}
+function excluirSalvo(i) {
+  const lista = JSON.parse(localStorage.getItem('relatorios_salvos') || '[]');
+  lista.splice(i,1);
+  localStorage.setItem('relatorios_salvos', JSON.stringify(lista));
+  verRelatoriosSalvos();
+}
+
+// ============ BACKUP / RESTAURAR (segurança contra perda) ============
+function fazerBackup() {
+  const tudo = {};
+  for (let i=0;i<localStorage.length;i++){
+    const k = localStorage.key(i);
+    if (k.startsWith('post_') || k === 'relatorios_salvos') tudo[k] = localStorage.getItem(k);
+  }
+  const blob = new Blob([JSON.stringify(tudo)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const hoje = new Date();
+  const nome = 'backup-postagens-' + hoje.getFullYear() + '-' + String(hoje.getMonth()+1).padStart(2,'0') + '-' + String(hoje.getDate()).padStart(2,'0') + '.json';
+  const a = document.createElement('a');
+  a.href = url; a.download = nome; a.click();
+  URL.revokeObjectURL(url);
+  alert('💾 Backup salvo no seu aparelho: ' + nome + '\nGuarde esse arquivo em local seguro.');
+}
+function restaurarBackup(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const tudo = JSON.parse(e.target.result);
+      if (!confirm('Restaurar este backup? Os dados atuais serão substituídos pelos do arquivo.')) return;
+      Object.keys(tudo).forEach(k => localStorage.setItem(k, tudo[k]));
+      alert('✅ Backup restaurado com sucesso!');
+      renderDia();
+    } catch(err) { alert('Arquivo inválido. Use um backup gerado por este app.'); }
+  };
+  reader.readAsText(file);
+  input.value = '';
 }
 
 renderDia();
