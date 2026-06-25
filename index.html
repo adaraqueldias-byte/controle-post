@@ -251,20 +251,16 @@
 
   /* AVISO BACKUP */
   .aviso-backup {
-    display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    background: linear-gradient(135deg, #1a1a2e, #16213e);
-    border: 1px solid #f59e0b; border-radius: 12px;
-    padding: 10px 14px; margin-bottom: 16px; font-size: 13px;
+    display: flex; align-items: center; justify-content: flex-end; gap: 4px;
+    margin-bottom: 8px;
   }
-  .aviso-backup span { color: #fcd34d; }
-  .aviso-backup button {
-    background: #f59e0b; border: none; border-radius: 8px;
-    color: #111; font-size: 12px; font-weight: 700;
-    padding: 6px 12px; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  .aviso-backup .icone-backup {
+    background: none; border: 1px solid #f59e0b; border-radius: 8px;
+    font-size: 15px; padding: 3px 8px; cursor: pointer; line-height: 1;
   }
   .aviso-backup .fechar-aviso {
-    background: none; color: #9090b8; font-size: 16px;
-    padding: 2px 6px; flex-shrink: 0;
+    background: none; border: none; color: #555577; font-size: 13px;
+    padding: 1px 3px; cursor: pointer; flex-shrink: 0;
   }
 
   /* VAZIO */
@@ -430,16 +426,16 @@ const PASSOS_LOJA = {
 };
 
 const CANAIS = [
-  { id: 'canal_whats',    nome: 'Canal WhatsApp',  grupo: 'Canais' },
-  { id: 'canal_telegram', nome: 'Canal Telegram',  grupo: 'Canais' },
-  { id: 'story_whats',    nome: 'Status (Zap)',    grupo: 'Story' },
-  { id: 'story_insta',    nome: 'Story Instagram', grupo: 'Story' },
-  { id: 'story_face',     nome: 'Story Facebook',  grupo: 'Story' },
-  { id: 'feed_insta',     nome: 'Feed Instagram',  grupo: 'Feed' },
-  { id: 'feed_face',      nome: 'Feed Facebook',   grupo: 'Feed' },
-  { id: 'reels_insta',    nome: 'Reels Instagram', grupo: 'Reels' },
-  { id: 'reels_face',     nome: 'Reels Facebook',  grupo: 'Reels' },
-  { id: 'shopee_video',   nome: 'Shopee Vídeo',    grupo: '' },
+  { id: 'canal_whats',    nome: 'WhatsApp',     grupo: 'Canais' },
+  { id: 'canal_telegram', nome: 'Telegram',     grupo: 'Canais' },
+  { id: 'story_whats',    nome: 'Status (Zap)', grupo: 'Story' },
+  { id: 'story_insta',    nome: 'Instagram',    grupo: 'Story' },
+  { id: 'story_face',     nome: 'Facebook',     grupo: 'Story' },
+  { id: 'feed_insta',     nome: 'Instagram',    grupo: 'Feed' },
+  { id: 'feed_face',      nome: 'Facebook',     grupo: 'Feed' },
+  { id: 'reels_insta',    nome: 'Instagram',    grupo: 'Reels' },
+  { id: 'reels_face',     nome: 'Facebook',     grupo: 'Reels' },
+  { id: 'shopee_video',   nome: 'Shopee Vídeo', grupo: '' },
 ];
 
 const LOJAS = {
@@ -526,26 +522,13 @@ function renderDia() {
     const pct = itens.length ? Math.round(marcados / itens.length * 100) : 0;
     const completo = itens.length > 0 && marcados === itens.length;
 
-    const presentes = new Set(itens.map(c => c.id));
     let canaisHtml = '';
     let grupoAtual = '\0'; // valor impossível para forçar abertura inicial
     itens.forEach(c => {
       const g = c.grupo || '';
       if (g !== grupoAtual) {
         if (grupoAtual !== '\0') canaisHtml += '</div>';
-        if (g) {
-          const badge = (cor, txt) => `<span style="background:${cor};color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:4px;margin-left:3px">${txt}</span>`;
-          const ig = badge('linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)','IG');
-          const fb = badge('#1877f2','f');
-          const wa = badge('#25d366','W');
-          const tg = badge('#229ed9','T');
-          let icones = '';
-          if (g === 'Canais') icones = (presentes.has('canal_whats')?wa:'') + (presentes.has('canal_telegram')?tg:'');
-          else if (g === 'Story') icones = (presentes.has('story_whats')?wa:'') + (presentes.has('story_insta')?ig:'') + (presentes.has('story_face')?fb:'');
-          else if (g === 'Feed') icones = (presentes.has('feed_insta')?ig:'') + (presentes.has('feed_face')?fb:'');
-          else if (g === 'Reels') icones = (presentes.has('reels_insta')?ig:'') + (presentes.has('reels_face')?fb:'');
-          canaisHtml += `<div class="grupo-label">${g}${icones}</div>`;
-        }
+        if (g) canaisHtml += `<div class="grupo-label">${g}</div>`;
         canaisHtml += '<div class="canais">';
         grupoAtual = g;
       }
@@ -761,7 +744,7 @@ function relatorioDia() {
   const dados = carregar(chave(d));
   if (dados.length === 0) { alert('Nenhum produto neste dia para gerar relatório.'); return; }
   const dataTxt = DIAS_SEMANA[d.getDay()] + ', ' + d.getDate() + ' de ' + MESES[d.getMonth()] + ' de ' + d.getFullYear();
-  const colunas = ['1º passo', ...CANAIS.map(c => c.nome)];
+  const colunas = ['1º passo', ...CANAIS.map(c => c.grupo ? c.grupo + ' ' + c.nome : c.nome)];
 
   let linhas = '';
   dados.forEach(p => {
@@ -913,8 +896,7 @@ function verificarAvisoBackup() {
   const temDados = Object.keys(localStorage).some(k => k.startsWith('post_'));
   if (!temDados || ultima === hoje) { wrap.innerHTML = ''; return; }
   wrap.innerHTML = `<div class="aviso-backup">
-    <span>💾 Lembre-se de fazer o <b>backup</b> do dia!</span>
-    <button onclick="fazerBackupAviso()">Backup agora</button>
+    <button class="icone-backup" onclick="fazerBackupAviso()" title="Fazer backup do dia">💾</button>
     <button class="fechar-aviso" onclick="fecharAvisoBackup()">✕</button>
   </div>`;
 }
