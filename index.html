@@ -422,8 +422,10 @@ const CANAIS = [
   { id: 'story_whats',    nome: 'Status (Zap)',    grupo: 'Story' },
   { id: 'story_insta',    nome: 'Story Instagram', grupo: 'Story' },
   { id: 'story_face',     nome: 'Story Facebook',  grupo: 'Story' },
-  { id: 'reels_insta',    nome: 'Reels Instagram', grupo: 'Formato Feed e Reels' },
-  { id: 'reels_face',     nome: 'Reels Facebook',  grupo: 'Formato Feed e Reels' },
+  { id: 'feed_insta',     nome: 'Feed Instagram',  grupo: 'Feed' },
+  { id: 'feed_face',      nome: 'Feed Facebook',   grupo: 'Feed' },
+  { id: 'reels_insta',    nome: 'Reels Instagram', grupo: 'Reels' },
+  { id: 'reels_face',     nome: 'Reels Facebook',  grupo: 'Reels' },
   { id: 'shopee_video',   nome: 'Shopee Vídeo',    grupo: '' },
 ];
 
@@ -512,8 +514,10 @@ function renderDia() {
         if (grupoAtual !== '\0') canaisHtml += '</div>';
         if (g) {
           const badge = (cor, txt) => `<span style="background:${cor};color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:4px;margin-left:3px">${txt}</span>`;
-          const icones = g === 'Story' ? badge('#25d366','W') + badge('linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)','IG') + badge('#1877f2','f') :
-                         g === 'Formato Feed e Reels' ? badge('linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)','IG') + badge('#1877f2','f') : '';
+          const ig = badge('linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)','IG');
+          const fb = badge('#1877f2','f');
+          const icones = g === 'Story' ? badge('#25d366','W') + ig + fb :
+                         (g === 'Feed' || g === 'Reels') ? ig + fb : '';
           canaisHtml += `<div class="grupo-label">${g}${icones}</div>`;
         }
         canaisHtml += '<div class="canais">';
