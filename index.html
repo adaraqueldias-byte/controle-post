@@ -516,7 +516,10 @@ function renderDia() {
           const badge = (cor, txt) => `<span style="background:${cor};color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:4px;margin-left:3px">${txt}</span>`;
           const ig = badge('linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)','IG');
           const fb = badge('#1877f2','f');
-          const icones = g === 'Story' ? badge('#25d366','W') + ig + fb :
+          const wa = badge('#25d366','W');
+          const tg = badge('#229ed9','T');
+          const icones = g === 'Canais' ? wa + tg :
+                         g === 'Story' ? wa + ig + fb :
                          (g === 'Feed' || g === 'Reels') ? ig + fb : '';
           canaisHtml += `<div class="grupo-label">${g}${icones}</div>`;
         }
