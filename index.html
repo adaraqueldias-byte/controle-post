@@ -238,6 +238,24 @@
   .canal.ok .canal-nome { color: #86efac; font-weight: 600; }
   .check { font-size: 13px; flex-shrink: 0; line-height: 1; }
 
+  /* AVISO BACKUP */
+  .aviso-backup {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border: 1px solid #f59e0b; border-radius: 12px;
+    padding: 10px 14px; margin-bottom: 16px; font-size: 13px;
+  }
+  .aviso-backup span { color: #fcd34d; }
+  .aviso-backup button {
+    background: #f59e0b; border: none; border-radius: 8px;
+    color: #111; font-size: 12px; font-weight: 700;
+    padding: 6px 12px; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  }
+  .aviso-backup .fechar-aviso {
+    background: none; color: #9090b8; font-size: 16px;
+    padding: 2px 6px; flex-shrink: 0;
+  }
+
   /* VAZIO */
   .vazio { text-align: center; padding: 56px 20px; color: #44446a; }
   .vazio-icone { font-size: 52px; margin-bottom: 14px; }
@@ -328,6 +346,7 @@
   <button class="btn-dia" onclick="mudarDia(1)">›</button>
 </div>
 
+<div id="aviso-backup-wrap"></div>
 <div class="resumo" id="resumo"></div>
 
 <button class="btn-add" onclick="abrirModal()" style="width:100%;margin-bottom:8px">＋ Adicionar produto</button>
@@ -805,7 +824,33 @@ function restaurarBackup(input) {
   input.value = '';
 }
 
+function verificarAvisoBackup() {
+  const hoje = new Date().toISOString().slice(0,10);
+  const ultima = localStorage.getItem('backup_aviso_dia');
+  const wrap = document.getElementById('aviso-backup-wrap');
+  // Só mostra se houver dados e ainda não avisou hoje
+  const temDados = Object.keys(localStorage).some(k => k.startsWith('post_'));
+  if (!temDados || ultima === hoje) { wrap.innerHTML = ''; return; }
+  wrap.innerHTML = `<div class="aviso-backup">
+    <span>💾 Lembre-se de fazer o <b>backup</b> do dia!</span>
+    <button onclick="fazerBackupAviso()">Backup agora</button>
+    <button class="fechar-aviso" onclick="fecharAvisoBackup()">✕</button>
+  </div>`;
+}
+
+function fecharAvisoBackup() {
+  const hoje = new Date().toISOString().slice(0,10);
+  localStorage.setItem('backup_aviso_dia', hoje);
+  document.getElementById('aviso-backup-wrap').innerHTML = '';
+}
+
+function fazerBackupAviso() {
+  fecharAvisoBackup();
+  fazerBackup();
+}
+
 renderDia();
+verificarAvisoBackup();
 
 // Registra o service worker (funcionar offline no celular)
 if ('serviceWorker' in navigator) {
