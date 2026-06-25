@@ -419,11 +419,11 @@ const PASSOS_LOJA = {
 const CANAIS = [
   { id: 'canal_whats',    nome: 'Canal WhatsApp',  grupo: 'Canais' },
   { id: 'canal_telegram', nome: 'Canal Telegram',  grupo: 'Canais' },
-  { id: 'story_whats',    nome: 'Status (Zap)',    grupo: 'Stories' },
-  { id: 'story_insta',    nome: 'Story Instagram', grupo: 'Stories' },
-  { id: 'story_face',     nome: 'Story Facebook',  grupo: 'Stories' },
-  { id: 'reels_insta',    nome: 'Reels Instagram', grupo: 'Reels' },
-  { id: 'reels_face',     nome: 'Reels Facebook',  grupo: 'Reels' },
+  { id: 'story_whats',    nome: 'Status (Zap)',    grupo: 'Story' },
+  { id: 'story_insta',    nome: 'Story Instagram', grupo: 'Story' },
+  { id: 'story_face',     nome: 'Story Facebook',  grupo: 'Story' },
+  { id: 'reels_insta',    nome: 'Reels Instagram', grupo: 'Formato Feed e Reels' },
+  { id: 'reels_face',     nome: 'Reels Facebook',  grupo: 'Formato Feed e Reels' },
   { id: 'shopee_video',   nome: 'Shopee Vídeo',    grupo: '' },
 ];
 
@@ -512,8 +512,8 @@ function renderDia() {
         if (grupoAtual !== '\0') canaisHtml += '</div>';
         if (g) {
           const badge = (cor, txt) => `<span style="background:${cor};color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:4px;margin-left:3px">${txt}</span>`;
-          const icones = g === 'Stories' ? badge('#25d366','W') + badge('linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)','IG') + badge('#1877f2','f') :
-                         g === 'Reels'   ? badge('linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)','IG') + badge('#1877f2','f') : '';
+          const icones = g === 'Story' ? badge('#25d366','W') + badge('linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)','IG') + badge('#1877f2','f') :
+                         g === 'Formato Feed e Reels' ? badge('linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)','IG') + badge('#1877f2','f') : '';
           canaisHtml += `<div class="grupo-label">${g}${icones}</div>`;
         }
         canaisHtml += '<div class="canais">';
