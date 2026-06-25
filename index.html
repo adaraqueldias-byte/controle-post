@@ -134,6 +134,17 @@
   }
   .modal input:focus, .modal select:focus { border-color: #7c3aed; }
   .modal select option { background: #18182c; }
+  /* SELEÇÃO DE LOCAIS NO MODAL */
+  .sel-locais { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  .sel-grupo-tit { font-size: 10px; font-weight: 700; color: #5a5a92; text-transform: uppercase; letter-spacing: .6px; margin-top: 4px; }
+  .sel-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .sel-chip {
+    font-size: 11px; padding: 5px 9px; border-radius: 12px;
+    border: 1px solid #2a2a44; background: #0d0d17; color: #6a6a90;
+    cursor: pointer; user-select: none; transition: all .15s;
+  }
+  .sel-chip.on { border-color: #7c3aed; background: #1c1438; color: #c4b5fd; font-weight: 600; }
+
   .modal-btns { display: flex; gap: 10px; margin-top: 4px; }
   .btn-salvar {
     flex: 1; padding: 13px; background: linear-gradient(135deg,#7c3aed,#9333ea);
@@ -387,6 +398,8 @@
         <button type="button" id="btn-remover-foto" onclick="removerFoto()" style="display:none;width:100%;margin-top:4px;padding:6px;background:none;border:none;color:#f87171;font-size:12px;cursor:pointer">✕ Remover foto</button>
       </div>
     </div>
+    <label>Onde vou postar? <span style="color:#5a5a92">(desmarque o que não usar)</span></label>
+    <div id="sel-locais" class="sel-locais"></div>
     <div class="modal-btns">
       <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
       <button class="btn-salvar" id="btn-salvar" onclick="salvarProduto()">Adicionar</button>
@@ -452,9 +465,16 @@ function chave(d) {
 function carregar(k) { return JSON.parse(localStorage.getItem('post_' + k) || '[]'); }
 function salvar(k, dados) { localStorage.setItem('post_' + k, JSON.stringify(dados)); }
 
-function itensDoProduto(loja) {
+function todosItens(loja) {
   const passo = PASSOS_LOJA[loja];
   return passo ? [passo, ...CANAIS] : [...CANAIS];
+}
+// Itens que o produto realmente vai usar (se não tiver "usar", conta todos — produtos antigos)
+function itensDoProduto(p) {
+  const loja = (typeof p === 'string') ? p : p.loja;
+  const todos = todosItens(loja);
+  if (typeof p === 'string' || !p.usar) return todos;
+  return todos.filter(c => p.usar[c.id]);
 }
 
 function renderDia() {
@@ -474,7 +494,7 @@ function renderDia() {
   const total = dados.length;
   let feitos = 0, possiveis = 0, completos = 0;
   dados.forEach(p => {
-    const itens = itensDoProduto(p.loja);
+    const itens = itensDoProduto(p);
     const marcados = itens.filter(c => p.canais && p.canais[c.id]).length;
     feitos += marcados;
     possiveis += itens.length;
@@ -501,11 +521,12 @@ function renderDia() {
   }
 
   lista.innerHTML = dados.map((p, i) => {
-    const itens = itensDoProduto(p.loja);
+    const itens = itensDoProduto(p);
     const marcados = itens.filter(c => p.canais && p.canais[c.id]).length;
-    const pct = Math.round(marcados / itens.length * 100);
-    const completo = marcados === itens.length;
+    const pct = itens.length ? Math.round(marcados / itens.length * 100) : 0;
+    const completo = itens.length > 0 && marcados === itens.length;
 
+    const presentes = new Set(itens.map(c => c.id));
     let canaisHtml = '';
     let grupoAtual = '\0'; // valor impossível para forçar abertura inicial
     itens.forEach(c => {
@@ -518,9 +539,11 @@ function renderDia() {
           const fb = badge('#1877f2','f');
           const wa = badge('#25d366','W');
           const tg = badge('#229ed9','T');
-          const icones = g === 'Canais' ? wa + tg :
-                         g === 'Story' ? wa + ig + fb :
-                         (g === 'Feed' || g === 'Reels') ? ig + fb : '';
+          let icones = '';
+          if (g === 'Canais') icones = (presentes.has('canal_whats')?wa:'') + (presentes.has('canal_telegram')?tg:'');
+          else if (g === 'Story') icones = (presentes.has('story_whats')?wa:'') + (presentes.has('story_insta')?ig:'') + (presentes.has('story_face')?fb:'');
+          else if (g === 'Feed') icones = (presentes.has('feed_insta')?ig:'') + (presentes.has('feed_face')?fb:'');
+          else if (g === 'Reels') icones = (presentes.has('reels_insta')?ig:'') + (presentes.has('reels_face')?fb:'');
           canaisHtml += `<div class="grupo-label">${g}${icones}</div>`;
         }
         canaisHtml += '<div class="canais">';
@@ -614,6 +637,37 @@ function removerFoto() {
   document.getElementById('inp-foto').value = '';
 }
 
+// Seleção de locais (quais o produto vai usar)
+let selUsar = {};
+
+function montarSelLocais(loja, usarObj) {
+  const itens = todosItens(loja);
+  // Se não vier seleção (produto novo ou antigo), marca todos
+  selUsar = {};
+  itens.forEach(c => { selUsar[c.id] = usarObj ? !!usarObj[c.id] : true; });
+
+  const cont = document.getElementById('sel-locais');
+  let html = '';
+  let grupoAtual = '\0';
+  itens.forEach(c => {
+    const g = c.grupo || (c.id === 'shopee_video' ? 'Shopee' : (PASSOS_LOJA[loja] && c.id === PASSOS_LOJA[loja].id ? '1º passo' : ''));
+    if (g !== grupoAtual) {
+      if (grupoAtual !== '\0') html += '</div>';
+      if (g) html += `<div class="sel-grupo-tit">${g}</div>`;
+      html += '<div class="sel-chips">';
+      grupoAtual = g;
+    }
+    html += `<span class="sel-chip${selUsar[c.id]?' on':''}" data-id="${c.id}" onclick="toggleSel('${c.id}',this)">${c.nome}</span>`;
+  });
+  if (grupoAtual !== '\0') html += '</div>';
+  cont.innerHTML = html;
+}
+
+function toggleSel(id, el) {
+  selUsar[id] = !selUsar[id];
+  el.classList.toggle('on', selUsar[id]);
+}
+
 function abrirModal(k, i) {
   editandoIndex = (i !== undefined) ? i : null;
   fotoBase64 = null;
@@ -631,11 +685,13 @@ function abrirModal(k, i) {
       img.style.display = 'block';
       document.getElementById('btn-remover-foto').style.display = 'block';
     }
+    montarSelLocais(dados[i].loja, dados[i].usar);
     document.getElementById('modal-titulo').textContent = 'Editar produto';
     document.getElementById('btn-salvar').textContent = 'Salvar';
   } else {
     document.getElementById('inp-nome').value = '';
     document.getElementById('inp-loja').value = '';
+    montarSelLocais('', null);
     document.getElementById('modal-titulo').textContent = 'Novo produto';
     document.getElementById('btn-salvar').textContent = 'Adicionar';
   }
@@ -653,14 +709,21 @@ function salvarProduto() {
   const loja = document.getElementById('inp-loja').value;
   if (!nome) { document.getElementById('inp-nome').focus(); return; }
   if (!loja) { document.getElementById('inp-loja').focus(); return; }
+  // Monta a lista de locais escolhidos para esta loja
+  const usar = {};
+  let qtdSel = 0;
+  todosItens(loja).forEach(c => { if (selUsar[c.id]) { usar[c.id] = true; qtdSel++; } });
+  if (qtdSel === 0) { alert('Escolha pelo menos um local para postar.'); return; }
+
   const k = chave(diaAtual());
   const dados = carregar(k);
   if (editandoIndex !== null) {
     dados[editandoIndex].nome = nome;
     dados[editandoIndex].loja = loja;
+    dados[editandoIndex].usar = usar;
     if (fotoAlterada) dados[editandoIndex].foto = fotoBase64 || undefined;
   } else {
-    dados.push({ nome, loja, foto: fotoBase64 || undefined, canais: {} });
+    dados.push({ nome, loja, usar, foto: fotoBase64 || undefined, canais: {} });
   }
   salvar(k, dados);
   fecharModal();
@@ -673,15 +736,21 @@ document.getElementById('overlay').addEventListener('click', function(e) {
 document.getElementById('inp-nome').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') document.getElementById('inp-loja').focus();
 });
+document.getElementById('inp-loja').addEventListener('change', function() {
+  // Mantém as escolhas dos canais; o novo 1º passo vem marcado
+  const passo = PASSOS_LOJA[this.value];
+  if (passo) selUsar[passo.id] = true;
+  montarSelLocais(this.value, selUsar);
+});
 
 // ============ RELATÓRIOS ============
 function statsDia(dados) {
   let feitos = 0, possiveis = 0, completos = 0;
   dados.forEach(p => {
-    const itens = itensDoProduto(p.loja);
+    const itens = itensDoProduto(p);
     const m = itens.filter(c => p.canais && p.canais[c.id]).length;
     feitos += m; possiveis += itens.length;
-    if (m === itens.length) completos++;
+    if (itens.length > 0 && m === itens.length) completos++;
   });
   return { produtos: dados.length, feitos, possiveis, completos };
 }
