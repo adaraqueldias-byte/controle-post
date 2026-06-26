@@ -233,11 +233,11 @@
     font-size: 10px; font-weight: 700; color: #5a5a92;
     text-transform: uppercase; letter-spacing: .8px; margin-top: 4px;
   }
-  .canais { display: flex; flex-wrap: wrap; gap: 4px; }
+  .canais { display: flex; flex-wrap: wrap; gap: 5px; }
 
   .canal {
     display: flex; align-items: center; gap: 3px;
-    padding: 3px 7px; border-radius: 12px;
+    padding: 3px 9px; border-radius: 11px;
     border: 1px solid #2a2a44; cursor: pointer;
     transition: all .15s; user-select: none; background: #0d0d17;
   }
@@ -247,7 +247,7 @@
 
   .canal-nome { font-size: 11px; color: #9090b8; white-space: nowrap; }
   .canal.ok .canal-nome { color: #86efac; font-weight: 600; }
-  .check { font-size: 13px; flex-shrink: 0; line-height: 1; }
+  .check { font-size: 13px; flex-shrink: 0; line-height: 1; color: #22c55e; font-weight: 700; }
 
   /* AVISO BACKUP */
   .aviso-backup {
@@ -267,6 +267,28 @@
   .vazio { text-align: center; padding: 56px 20px; color: #44446a; }
   .vazio-icone { font-size: 52px; margin-bottom: 14px; }
   .vazio p { font-size: 15px; line-height: 1.5; }
+
+  /* RODAPÉ LIMPO */
+  .rodape {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-top: 18px; padding-top: 14px; border-top: 1px solid #20203a;
+  }
+  .rodape-btn {
+    background: transparent; border: none; color: #8888b0;
+    font-size: 13px; padding: 6px 10px; cursor: pointer; border-radius: 8px;
+  }
+  .rodape-btn:hover { background: #18182c; color: #c4b5fd; }
+  .painel-mais {
+    display: none; flex-direction: column; gap: 6px;
+    margin-top: 10px; padding: 10px; background: #14142a;
+    border: 1px solid #20203a; border-radius: 10px;
+  }
+  .painel-mais.aberto { display: flex; }
+  .painel-mais button {
+    background: transparent; border: 1px solid #2a2a44; border-radius: 8px;
+    color: #9090b8; font-size: 13px; padding: 9px; cursor: pointer;
+  }
+  .painel-mais button:hover { background: #18182c; color: #c4b5fd; }
 
   /* BOTÕES MINI (backup / salvos) */
   .acoes-mini { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
@@ -313,6 +335,11 @@
   .rel-folha td.loja { font-weight: bold; white-space: nowrap; }
   .rel-folha td.prod { min-width: 120px; }
   .rel-folha .cel { color: #16a34a; font-weight: bold; font-size: 13px; }
+  .rel-folha .cel-ok { color: #16a34a; font-weight: bold; font-size: 14px; }
+  .rel-folha .cel-falta { color: #dc2626; font-weight: bold; font-size: 14px; background: #fee2e2; }
+  .rel-folha .cel-na { color: #bbb; font-size: 12px; }
+  .rel-legenda { font-size: 11px; color: #555; margin-bottom: 10px; }
+  .rel-legenda b { font-weight: bold; }
   .rel-folha tr:nth-child(even) td { background: #f3f0fb; }
   .rel-folha .tab-sem td.dia { text-align: left; font-weight: bold; }
   .rel-folha .data-min { font-weight: normal; color: #888; font-size: 10px; }
@@ -341,7 +368,7 @@
 </head>
 <body>
 
-<div class="app-titulo">📋 Controle de Post</div>
+<div class="app-titulo">Controle de Post</div>
 
 <div class="header">
   <button class="btn-dia" onclick="mudarDia(-1)">‹</button>
@@ -356,19 +383,21 @@
 <div id="aviso-backup-wrap"></div>
 <div class="resumo" id="resumo"></div>
 
-<button class="btn-add" onclick="abrirModal()" style="width:100%;margin-bottom:8px">＋ Adicionar produto</button>
-<div class="acoes-topo">
-  <button class="btn-imprimir" onclick="relatorioDia()" title="Relatório do dia">📄 Relatório do dia</button>
-  <button class="btn-imprimir" onclick="relatorioSemana()" title="Relatório da semana">📅 Relatório da semana</button>
-</div>
-<div class="acoes-mini">
-  <button onclick="verRelatoriosSalvos()">🗂️ Relatórios salvos</button>
-  <button onclick="fazerBackup()">💾 Backup</button>
-  <button onclick="document.getElementById('inp-restaurar').click()">📂 Restaurar</button>
-  <input type="file" id="inp-restaurar" accept=".json" style="display:none" onchange="restaurarBackup(this)">
-</div>
+<button class="btn-add" onclick="abrirModal()" style="width:100%;margin-bottom:14px">＋ Adicionar produto</button>
 
 <div id="lista"></div>
+
+<div class="rodape">
+  <button class="rodape-btn" onclick="relatorioDia()">Relatório do dia</button>
+  <button class="rodape-btn" onclick="fazerBackup()">💾 Backup</button>
+  <button class="rodape-btn" onclick="toggleMais()">⋯ Mais</button>
+</div>
+<div id="painel-mais" class="painel-mais">
+  <button onclick="relatorioSemana()">Relatório da semana</button>
+  <button onclick="verRelatoriosSalvos()">Relatórios salvos</button>
+  <button onclick="document.getElementById('inp-restaurar').click()">Restaurar backup</button>
+  <input type="file" id="inp-restaurar" accept=".json" style="display:none" onchange="restaurarBackup(this)">
+</div>
 
 <!-- MODAL -->
 <div class="overlay" id="overlay">
@@ -539,16 +568,13 @@ function renderDia() {
       const ok = p.canais && p.canais[c.id];
       canaisHtml += `<div class="canal${ok?' ok':''}" onclick="toggle('${k}',${i},'${c.id}')">
         <span class="canal-nome">${c.nome}</span>
-        ${ok?'<span class="check">✅</span>':''}
+        ${ok?'<span class="check">✓</span>':''}
       </div>`;
     });
     if (grupoAtual !== '\0') canaisHtml += '</div>';
 
-    const [ano, mes, dia2] = k.split('-');
-    const dataTxt = dia2 + '/' + mes + '/' + ano;
     return `
     <div class="card${completo?' completo':''}">
-      <div class="card-data">📅 ${dataTxt}</div>
       <div class="card-top">
         <div class="prod-foto-wrap">
           ${p.foto ? `<img class="prod-foto" src="${p.foto}" alt="">` : ''}
@@ -580,6 +606,7 @@ function escapar(s) {
 
 function mudarDia(d) { offsetDia += d; renderDia(); }
 function voltarHoje() { offsetDia = 0; renderDia(); }
+function toggleMais() { document.getElementById('painel-mais').classList.toggle('aberto'); }
 
 function toggle(k, i, canalId) {
   const dados = carregar(k);
@@ -750,12 +777,18 @@ function relatorioDia() {
   const dataTxt = DIAS_SEMANA[d.getDay()] + ', ' + d.getDate() + ' de ' + MESES[d.getMonth()] + ' de ' + d.getFullYear();
   const colunas = ['1º passo', ...CANAIS.map(c => c.grupo ? c.grupo + ' ' + c.nome : c.nome)];
 
+  // ✔ verde = postado · ✗ vermelho = falta postar · — cinza = não usa neste produto
+  const celula = (id, usados, can) => {
+    if (!usados.has(id)) return '<td class="cel-na">—</td>';
+    return can[id] ? '<td class="cel-ok">✔</td>' : '<td class="cel-falta">✗</td>';
+  };
   let linhas = '';
   dados.forEach(p => {
     const passo = PASSOS_LOJA[p.loja];
     const can = p.canais || {};
-    let tds = `<td class="cel">${passo && can[passo.id] ? '✔' : ''}</td>`;
-    CANAIS.forEach(c => { tds += `<td class="cel">${can[c.id] ? '✔' : ''}</td>`; });
+    const usados = new Set(itensDoProduto(p).map(c => c.id));
+    let tds = celula(passo ? passo.id : '__', usados, can);
+    CANAIS.forEach(c => { tds += celula(c.id, usados, can); });
     linhas += `<tr><td class="loja">${LOJAS[p.loja]||p.loja}</td><td class="prod">${escapar(p.nome)}</td>${tds}</tr>`;
   });
   const thead = '<th class="loja">Loja</th><th class="prod">Produto</th>' + colunas.map(c => `<th>${c}</th>`).join('');
@@ -764,6 +797,7 @@ function relatorioDia() {
   const corpo = `<h1>Relatório do dia</h1>
     <div class="rsub">${dataTxt}</div>
     <div class="resumo-rel">${s.produtos} produtos · ${s.feitos}/${s.possiveis} postagens · ${s.completos} concluídos</div>
+    <div class="rel-legenda"><b style="color:#16a34a">✔ postado</b> &nbsp; <b style="color:#dc2626">✗ falta postar</b> &nbsp; <b style="color:#bbb">— não usa</b></div>
     <table><thead><tr>${thead}</tr></thead><tbody>${linhas}</tbody></table>`;
   abrirRelatorio('Relatório do dia — ' + dataTxt, corpo);
 }
