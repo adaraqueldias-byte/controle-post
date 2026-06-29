@@ -381,7 +381,6 @@
 </div>
 
 <div id="aviso-backup-wrap"></div>
-<div class="resumo" id="resumo"></div>
 
 <button class="btn-add" onclick="abrirModal()" style="width:100%;margin-bottom:14px">＋ Adicionar produto</button>
 
@@ -447,11 +446,9 @@
 
 <script>
 const PASSOS_LOJA = {
-  shopee:        { id: 'vitrine',    nome: 'Vitrine afiliado' },
-  mercadolivre:  { id: 'meus_links', nome: 'Meus Links ML' },
-  shein:         { id: 'vitrine',    nome: 'Vitrine afiliado' },
-  amazon:        { id: 'vitrine',    nome: 'Vitrine afiliado' },
-  magalu:        { id: 'vitrine',    nome: 'Vitrine afiliado' },
+  shopee:        { id: 'vitrine',           nome: 'Vitrine afiliado' },
+  mercadolivre:  { id: 'meus_links',        nome: 'Meus Links ML' },
+  amazon:        { id: 'meus_links_amazon', nome: 'Meus Links Amazon' },
 };
 
 const CANAIS = [
@@ -468,7 +465,6 @@ const CANAIS = [
   { id: 'yt_video',       nome: 'Vídeo',        grupo: 'YouTube' },
   { id: 'tiktok',         nome: 'TikTok',       grupo: 'TikTok' },
   { id: 'tiktok_shop',    nome: 'TikTok Shop',  grupo: 'TikTok' },
-  { id: 'shopee_video',   nome: 'Shopee Vídeo', grupo: '' },
 ];
 
 const LOJAS = {
@@ -492,11 +488,20 @@ function chave(d) {
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 function carregar(k) { return JSON.parse(localStorage.getItem('post_' + k) || '[]'); }
-function salvar(k, dados) { localStorage.setItem('post_' + k, JSON.stringify(dados)); }
+function salvar(k, dados) {
+  try {
+    localStorage.setItem('post_' + k, JSON.stringify(dados));
+  } catch(e) {
+    alert('⚠️ Memória cheia! Faça um backup agora e remova fotos de produtos antigos para liberar espaço.');
+  }
+}
+
+const SHOPEE_VIDEO = { id: 'shopee_video', nome: 'Shopee Vídeo', grupo: '' };
 
 function todosItens(loja) {
   const passo = PASSOS_LOJA[loja];
-  return passo ? [passo, ...CANAIS] : [...CANAIS];
+  const base = passo ? [passo, ...CANAIS] : [...CANAIS];
+  return loja === 'shopee' ? [...base, SHOPEE_VIDEO] : base;
 }
 // Itens que o produto realmente vai usar (se não tiver "usar", conta todos — produtos antigos)
 function itensDoProduto(p) {
@@ -518,26 +523,6 @@ function renderDia() {
   const bh = document.getElementById('badge-hoje');
   if (offsetDia === 0) bh.innerHTML = '<span class="badge-hoje">Hoje</span>';
   else bh.innerHTML = '<span class="badge-voltar-hoje" onclick="voltarHoje()">↩ Voltar para hoje</span>';
-
-  // Resumo
-  const total = dados.length;
-  let feitos = 0, possiveis = 0, completos = 0;
-  dados.forEach(p => {
-    const itens = itensDoProduto(p);
-    const marcados = itens.filter(c => p.canais && p.canais[c.id]).length;
-    feitos += marcados;
-    possiveis += itens.length;
-    if (marcados === itens.length) completos++;
-  });
-
-  const resumo = document.getElementById('resumo');
-  if (total === 0) {
-    resumo.innerHTML = 'Nenhum produto registrado';
-  } else if (completos === total) {
-    resumo.innerHTML = `<span class="tudo-ok">✅ Tudo postado!</span> ${total} produto${total>1?'s':''} concluído${total>1?'s':''}`;
-  } else {
-    resumo.innerHTML = `<span>${total}</span> produto${total>1?'s':''} · <span>${feitos}/${possiveis}</span> postagens · <span>${completos}</span> concluído${completos!==1?'s':''}`;
-  }
 
   // Lista
   const lista = document.getElementById('lista');
@@ -632,12 +617,26 @@ function previewFoto(input) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
-    fotoBase64 = e.target.result;
-    fotoAlterada = true;
-    const img = document.getElementById('preview-foto');
-    img.src = fotoBase64;
-    img.style.display = 'block';
-    document.getElementById('btn-remover-foto').style.display = 'block';
+    // Comprime a imagem para caber no localStorage sem sumir
+    const imgEl = new Image();
+    imgEl.onload = () => {
+      const MAX = 400;
+      let w = imgEl.width, h = imgEl.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(imgEl, 0, 0, w, h);
+      fotoBase64 = canvas.toDataURL('image/jpeg', 0.7);
+      fotoAlterada = true;
+      const prev = document.getElementById('preview-foto');
+      prev.src = fotoBase64;
+      prev.style.display = 'block';
+      document.getElementById('btn-remover-foto').style.display = 'block';
+    };
+    imgEl.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
