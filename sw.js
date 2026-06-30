@@ -1,5 +1,5 @@
-// Service Worker — guarda o app para funcionar offline
-const CACHE = 'controle-post-v14';
+// Service Worker — busca sempre a versão nova quando tem internet
+const CACHE = 'controle-post-v15';
 const ARQUIVOS = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
@@ -7,17 +7,29 @@ self.addEventListener('install', e => {
   self.skipWaiting();
 });
 
+self.addEventListener('message', e => {
+  if (e.data === 'skipWaiting') self.skipWaiting();
+});
+
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys => Promise.all(
       keys.filter(k => k !== CACHE).map(k => caches.delete(k))
-    ))
+    )).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
+// Rede primeiro: se tem internet, sempre pega a versão atualizada.
+// Sem internet, usa o que estiver guardado (funciona offline).
 self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
   e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request))
+    fetch(e.request)
+      .then(resp => {
+        const copia = resp.clone();
+        caches.open(CACHE).then(c => c.put(e.request, copia)).catch(()=>{});
+        return resp;
+      })
+      .catch(() => caches.match(e.request))
   );
 });
