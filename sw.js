@@ -1,5 +1,5 @@
 // Service Worker — guarda o app para funcionar offline
-const CACHE = 'controle-post-v13';
+const CACHE = 'controle-post-v14';
 const ARQUIVOS = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
