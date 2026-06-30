@@ -433,6 +433,18 @@
   </div>
 </div>
 
+<!-- CONFIRMAÇÃO EXCLUIR -->
+<div class="overlay" id="conf-overlay">
+  <div class="modal" style="max-width:320px;text-align:center">
+    <p style="font-size:15px;color:#e0e0e0;margin-bottom:8px">Excluir produto?</p>
+    <p id="conf-nome" style="font-size:14px;color:#f87171;margin-bottom:20px;word-break:break-word"></p>
+    <div class="modal-btns">
+      <button class="btn-cancelar" onclick="cancelarExcluir()">Não</button>
+      <button class="btn-salvar" style="background:linear-gradient(135deg,#dc2626,#ef4444)" onclick="confirmarExcluir()">Sim, excluir</button>
+    </div>
+  </div>
+</div>
+
 <!-- TELA DE RELATÓRIO -->
 <div class="rel-overlay" id="rel-overlay">
   <div class="rel-topo no-print">
@@ -605,12 +617,25 @@ function toggle(k, i, canalId) {
   renderDia();
 }
 
+let _excluirK = null, _excluirI = null;
 function excluir(k, i) {
   const dados = carregar(k);
-  if (!confirm('Excluir "' + dados[i].nome + '"?')) return;
-  dados.splice(i, 1);
-  salvar(k, dados);
+  _excluirK = k; _excluirI = i;
+  document.getElementById('conf-nome').textContent = '"' + dados[i].nome + '"';
+  document.getElementById('conf-overlay').classList.add('open');
+}
+function confirmarExcluir() {
+  document.getElementById('conf-overlay').classList.remove('open');
+  if (_excluirK === null) return;
+  const dados = carregar(_excluirK);
+  dados.splice(_excluirI, 1);
+  salvar(_excluirK, dados);
+  _excluirK = null; _excluirI = null;
   renderDia();
+}
+function cancelarExcluir() {
+  document.getElementById('conf-overlay').classList.remove('open');
+  _excluirK = null; _excluirI = null;
 }
 
 let fotoBase64 = null;
