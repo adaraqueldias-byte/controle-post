@@ -123,6 +123,7 @@
     background: #18182c; border-radius: 18px; padding: 24px;
     width: 100%; max-width: 420px; border: 1px solid #2a2a44;
     animation: pop .18s ease;
+    max-height: 90vh; overflow-y: auto;
   }
   @keyframes pop { from { transform: scale(.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   .modal h3 { font-size: 18px; margin-bottom: 16px; color: #fff; }
@@ -458,8 +459,8 @@ const CANAIS = [
   { id: 'story_whats',    nome: 'Status (Zap)', grupo: 'Story' },
   { id: 'story_insta',    nome: 'Instagram',    grupo: 'Story' },
   { id: 'story_face',     nome: 'Facebook',     grupo: 'Story' },
-  { id: 'feed_insta',     nome: 'Instagram',    grupo: 'Feed' },
-  { id: 'feed_face',      nome: 'Facebook',     grupo: 'Feed' },
+  { id: 'feed_insta',     nome: 'Instagram',    grupo: 'Post Carrossel' },
+  { id: 'feed_face',      nome: 'Facebook',     grupo: 'Post Carrossel' },
   { id: 'reels_insta',    nome: 'Instagram',    grupo: 'Reels' },
   { id: 'reels_face',     nome: 'Facebook',     grupo: 'Reels' },
   { id: 'yt_shorts',      nome: 'Shorts',       grupo: 'YouTube' },
