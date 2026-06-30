@@ -244,11 +244,11 @@
     transition: all .15s; user-select: none; background: #1a1a2e;
   }
   .canal:active { transform: scale(.95); }
-  .canal.ok { border-color: #22c55e; background: #0a2414; }
+  .canal.ok { border-color: #16a34a; background: #22c55e; }
 
-  .canal-nome { font-size: 11px; color: #7070a0; white-space: nowrap; }
-  .canal.ok .canal-nome { color: #4ade80; font-weight: 700; }
-  .check { font-size: 13px; flex-shrink: 0; line-height: 1; color: #22c55e; font-weight: 700; }
+  .canal-nome { font-size: 11px; color: #9090b8; white-space: nowrap; }
+  .canal.ok .canal-nome { color: #ffffff; font-weight: 700; }
+  .check { font-size: 13px; flex-shrink: 0; line-height: 1; color: #ffffff; font-weight: 700; }
 
   /* AVISO BACKUP */
   .aviso-backup {
@@ -539,7 +539,7 @@ function renderDia() {
 
   // Lista
   const lista = document.getElementById('lista');
-  if (total === 0) {
+  if (dados.length === 0) {
     lista.innerHTML = `<div class="vazio">
       <div class="vazio-icone">🛍️</div>
       <p>Nenhum produto ainda.<br>Toque em <b>"+ Adicionar produto"</b> para começar.</p>
