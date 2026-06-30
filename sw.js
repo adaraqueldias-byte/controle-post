@@ -1,5 +1,5 @@
 // Service Worker — busca sempre a versão nova quando tem internet
-const CACHE = 'controle-post-v16';
+const CACHE = 'controle-post-v17';
 const ARQUIVOS = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
