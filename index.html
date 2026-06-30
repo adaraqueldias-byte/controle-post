@@ -194,6 +194,7 @@
   .loja-amazon       { background: #ff9900; color: #111; }
   .loja-magalu       { background: #0086ff; color: #fff; }
 
+  .prod-num { font-size: 13px; font-weight: 700; color: #5a5a92; margin-right: 2px; }
   .prod-nome { font-size: 16px; font-weight: 600; color: #fff; }
   .selo-completo { font-size: 14px; }
 
@@ -535,6 +536,7 @@ function renderDia() {
   }
 
   lista.innerHTML = dados.map((p, i) => {
+    const num = i + 1;
     const itens = itensDoProduto(p);
     const marcados = itens.filter(c => p.canais && p.canais[c.id]).length;
     const pct = itens.length ? Math.round(marcados / itens.length * 100) : 0;
@@ -565,6 +567,7 @@ function renderDia() {
           ${p.foto ? `<img class="prod-foto" src="${p.foto}" alt="">` : ''}
           <div class="prod-info-col">
             <div class="prod-info">
+              <span class="prod-num">${num}.</span>
               <span class="loja-badge loja-${p.loja}">${LOJAS[p.loja]||p.loja}</span>
               ${completo?'<span class="selo-completo">✅</span>':''}
             </div>
@@ -573,7 +576,7 @@ function renderDia() {
         </div>
         <div class="card-acoes">
           <button class="btn-icone btn-editar" onclick="abrirModal('${k}',${i})" title="Editar">✏️</button>
-          <button class="btn-icone btn-excluir" onclick="excluir('${k}',${i})" title="Excluir">✕</button>
+          <button class="btn-icone btn-excluir" onclick="excluir('${k}',${i})" title="Excluir">🗑️</button>
         </div>
       </div>
       <div class="progresso-wrap">
