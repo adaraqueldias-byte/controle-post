@@ -423,8 +423,6 @@
         <button type="button" id="btn-remover-foto" onclick="removerFoto()" style="display:none;width:100%;margin-top:4px;padding:6px;background:none;border:none;color:#f87171;font-size:12px;cursor:pointer">✕ Remover foto</button>
       </div>
     </div>
-    <label>Onde vou postar? <span style="color:#5a5a92">(desmarque o que não usar)</span></label>
-    <div id="sel-locais" class="sel-locais"></div>
     <div class="modal-btns">
       <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
       <button class="btn-salvar" id="btn-salvar" onclick="salvarProduto()">Adicionar</button>
@@ -516,12 +514,10 @@ function todosItens(loja) {
   const base = passo ? [passo, ...CANAIS] : [...CANAIS];
   return loja === 'shopee' ? [...base, SHOPEE_VIDEO] : base;
 }
-// Itens que o produto realmente vai usar (se não tiver "usar", conta todos — produtos antigos)
+// Todo produto mostra todos os ícones da sua loja (simples: marca verde conforme posta)
 function itensDoProduto(p) {
   const loja = (typeof p === 'string') ? p : p.loja;
-  const todos = todosItens(loja);
-  if (typeof p === 'string' || !p.usar) return todos;
-  return todos.filter(c => p.usar[c.id]);
+  return todosItens(loja);
 }
 
 function renderDia() {
@@ -726,13 +722,11 @@ function abrirModal(k, i) {
       img.style.display = 'block';
       document.getElementById('btn-remover-foto').style.display = 'block';
     }
-    montarSelLocais(dados[i].loja, dados[i].usar);
     document.getElementById('modal-titulo').textContent = 'Editar produto';
     document.getElementById('btn-salvar').textContent = 'Salvar';
   } else {
     document.getElementById('inp-nome').value = '';
     document.getElementById('inp-loja').value = '';
-    montarSelLocais('', null);
     document.getElementById('modal-titulo').textContent = 'Novo produto';
     document.getElementById('btn-salvar').textContent = 'Adicionar';
   }
@@ -750,21 +744,16 @@ function salvarProduto() {
   const loja = document.getElementById('inp-loja').value;
   if (!nome) { document.getElementById('inp-nome').focus(); return; }
   if (!loja) { document.getElementById('inp-loja').focus(); return; }
-  // Monta a lista de locais escolhidos para esta loja
-  const usar = {};
-  let qtdSel = 0;
-  todosItens(loja).forEach(c => { if (selUsar[c.id]) { usar[c.id] = true; qtdSel++; } });
-  if (qtdSel === 0) { alert('Escolha pelo menos um local para postar.'); return; }
 
   const k = chave(diaAtual());
   const dados = carregar(k);
   if (editandoIndex !== null) {
     dados[editandoIndex].nome = nome;
     dados[editandoIndex].loja = loja;
-    dados[editandoIndex].usar = usar;
+    delete dados[editandoIndex].usar;
     if (fotoAlterada) dados[editandoIndex].foto = fotoBase64 || undefined;
   } else {
-    dados.push({ nome, loja, usar, foto: fotoBase64 || undefined, canais: {} });
+    dados.push({ nome, loja, foto: fotoBase64 || undefined, canais: {} });
   }
   salvar(k, dados);
   fecharModal();
@@ -776,12 +765,6 @@ document.getElementById('overlay').addEventListener('click', function(e) {
 });
 document.getElementById('inp-nome').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') document.getElementById('inp-loja').focus();
-});
-document.getElementById('inp-loja').addEventListener('change', function() {
-  // Mantém as escolhas dos canais; o novo 1º passo vem marcado
-  const passo = PASSOS_LOJA[this.value];
-  if (passo) selUsar[passo.id] = true;
-  montarSelLocais(this.value, selUsar);
 });
 
 // ============ RELATÓRIOS ============
