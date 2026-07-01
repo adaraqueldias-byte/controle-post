@@ -1,0 +1,66 @@
+name: Minerar produtos (diário)
+
+# =====================================================================
+# Este é o "servidor grátis" do robô. O GitHub roda ele sozinho todo
+# dia no horário abaixo — você não precisa deixar nenhum PC ligado.
+# Também dá pra rodar na hora pelo botão "Run workflow" na aba Actions.
+# =====================================================================
+
+on:
+  schedule:
+    # 11:00 UTC = 08:00 no horário de Brasília (UTC-3).
+    # Mude a hora aqui se quiser outro horário (sempre em UTC).
+    - cron: "0 11 * * *"
+  workflow_dispatch: {} # permite rodar manualmente pelo site do GitHub
+
+# Necessário para o robô salvar o produtos.json de volta no repositório.
+permissions:
+  contents: write
+
+jobs:
+  minerar:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: minerador
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Preparar o Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      - name: Minerar e postar no Telegram
+        env:
+          # Palavras-chave e limite: configure em Settings > Secrets and
+          # variables > Actions > Variables (ficam visíveis, sem segredo).
+          PALAVRAS_CHAVE: ${{ vars.PALAVRAS_CHAVE }}
+          LIMITE_POR_BUSCA: ${{ vars.LIMITE_POR_BUSCA }}
+          MAX_POSTS_POR_RODADA: ${{ vars.MAX_POSTS_POR_RODADA }}
+          # Credenciais: configure na aba Secrets (ficam ocultas).
+          ML_AFFILIATE_TAG: ${{ secrets.ML_AFFILIATE_TAG }}
+          SHOPEE_APP_ID: ${{ secrets.SHOPEE_APP_ID }}
+          SHOPEE_APP_SECRET: ${{ secrets.SHOPEE_APP_SECRET }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        # --tudo = minera nas lojas e depois posta os novos no Telegram.
+        run: python main.py --tudo
+
+      - name: Salvar os produtos no repositório
+        # Salva o JSON em docs/ (que o app publica no GitHub Pages) e o banco
+        # (guarda o que já foi postado, para não repetir na próxima execução).
+        run: |
+          git config user.name "robo-minerador[bot]"
+          git config user.email "actions@github.com"
+          git add -f ../docs/produtos.json dados/produtos.db
+          if git diff --staged --quiet; then
+            echo "Nenhuma novidade para salvar."
+          else
+            git commit -m "Atualiza produtos minerados [skip ci]"
+            git push
+          fi

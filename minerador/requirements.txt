@@ -1,0 +1,4 @@
+# Dependências do robô minerador
+requests>=2.31.0        # requisições HTTP às APIs da Shopee e do Mercado Livre
+schedule>=1.2.0         # agendamento das atualizações diárias
+python-dotenv>=1.0.0    # carrega credenciais do arquivo .env
