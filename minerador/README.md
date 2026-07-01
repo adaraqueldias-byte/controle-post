@@ -19,8 +19,8 @@ você conecte depois.
 - 🔗 Guarda **link + foto + preço + desconto + nº de vendas + avaliação**.
 - 🗓️ **Atualização diária automática** no horário que você escolher.
 - 💾 Salva tudo num banco **SQLite** (histórico) e exporta um **JSON**.
-- 🖥️ **Painel visual** (`painel.html`) que mostra os produtos com foto e
-  botão "Ver produto".
+- 📱 **App de garimpo** (PWA instalável, em `docs/`) que mostra as ofertas
+  com foto, preço, desconto, filtros e botão de compartilhar.
 - ➕ Fácil de **adicionar novas lojas** (Amazon, AliExpress, etc.).
 
 ---
@@ -32,14 +32,13 @@ minerador/
 ├── main.py                 # ponto de entrada (rodar / agendar / exportar)
 ├── requirements.txt        # dependências
 ├── .env.example            # modelo de configuração (copie para .env)
-├── painel.html             # painel visual dos produtos minerados
-├── dados/                  # banco SQLite + JSON gerado (não vai pro Git)
+├── dados/                  # banco SQLite (histórico + controle de postados)
 └── minerador/              # o código do robô
     ├── config.py           # lê o .env e centraliza as configurações
     ├── models.py           # o que é um "Produto" (link, foto, preço...)
     ├── robo.py             # roda uma rodada de mineração
     ├── storage.py          # salva/atualiza no SQLite (sem duplicar)
-    ├── exportador.py       # gera o dados/produtos.json
+    ├── exportador.py       # gera o docs/produtos.json (o app lê daqui)
     └── fontes/             # uma classe por loja
         ├── base.py         # contrato que toda loja segue
         ├── mercadolivre.py # Mercado Livre (API pública)
@@ -83,9 +82,17 @@ python main.py --exportar # só regenera o JSON a partir do banco
 ```
 
 ### 4. Ver os produtos
-Abra o `painel.html` no navegador (de preferência servindo a pasta:
-`python -m http.server` e acesse `painel.html`). Ele lê o
-`dados/produtos.json` e mostra tudo com foto, preço, desconto e link.
+O app de garimpo fica na pasta `docs/` (na raiz do repositório) e é
+publicado no **GitHub Pages**. Ele lê o `docs/produtos.json` gerado pelo
+robô e mostra as ofertas com foto, preço, desconto, filtros e botão de
+compartilhar. Para testar localmente: `python -m http.server` dentro de
+`docs/` e abra no navegador.
+
+### Publicar o app (grátis, GitHub Pages)
+
+No GitHub: **Settings → Pages → Source: Deploy from a branch →** escolha a
+branch do projeto e a pasta **`/docs`** → **Save**. Em ~1 minuto o app fica
+no ar num link tipo `https://SEU-USUARIO.github.io/controle-post/`.
 
 ---
 
@@ -152,7 +159,7 @@ produto) é a matéria-prima para os próximos módulos que você pode plugar:
 | **Minerador** | Garimpa ofertas da Shopee/ML com seu link e foto | ✅ este projeto |
 | **Postador** | Publica os produtos no Telegram (foto + link + botão) | ✅ `telegram.py` |
 | **Cupons** | Aplica cupons válidos no link antes de postar | 🔌 encaixa no `Produto.link` |
-| **Painel** | Tudo num lugar só, rodando no servidor | ✅ `painel.html` (base) |
+| **App de garimpo** | Vitrine PWA instalável, publicada no GitHub Pages | ✅ `docs/` |
 
 Cada peça conversa pelo mesmo `produtos.json`, então dá para crescer aos
 poucos sem refazer nada.

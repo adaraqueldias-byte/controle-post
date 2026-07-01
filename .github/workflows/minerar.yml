@@ -52,12 +52,12 @@ jobs:
         run: python main.py --tudo
 
       - name: Salvar os produtos no repositório
-        # Salva o JSON (para exibir) e o banco (guarda o que já foi postado,
-        # para não repetir produtos na próxima execução).
+        # Salva o JSON em docs/ (que o app publica no GitHub Pages) e o banco
+        # (guarda o que já foi postado, para não repetir na próxima execução).
         run: |
           git config user.name "robo-minerador[bot]"
           git config user.email "actions@github.com"
-          git add -f dados/produtos.json dados/produtos.db
+          git add -f ../docs/produtos.json dados/produtos.db
           if git diff --staged --quiet; then
             echo "Nenhuma novidade para salvar."
           else

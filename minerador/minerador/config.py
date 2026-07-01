@@ -39,8 +39,15 @@ LIMITE_POR_BUSCA = int(os.getenv("LIMITE_POR_BUSCA") or 20)
 HORARIO_DIARIO = (os.getenv("HORARIO_DIARIO") or "08:00").strip()
 
 # --- Caminhos ------------------------------------------------------
+# O banco (histórico + controle de "já postado") fica em minerador/dados.
 PASTA_DADOS = os.path.join(RAIZ, "dados")
 CAMINHO_BANCO = os.path.join(PASTA_DADOS, "produtos.db")
-CAMINHO_JSON = os.path.join(PASTA_DADOS, "produtos.json")
+
+# O JSON vai para a pasta "docs" na raiz do repositório, que é o que o
+# GitHub Pages publica — assim o app de garimpo lê os produtos direto do ar.
+REPO = os.path.dirname(RAIZ)
+PASTA_DOCS = os.path.join(REPO, "docs")
+CAMINHO_JSON = os.path.join(PASTA_DOCS, "produtos.json")
 
 os.makedirs(PASTA_DADOS, exist_ok=True)
+os.makedirs(PASTA_DOCS, exist_ok=True)

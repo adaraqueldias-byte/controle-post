@@ -4,7 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Garimpo · Ofertas do dia</title>
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#7c3aed">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   :root { --bg:#0d0d17; --card:#16162a; --linha:#262645; --roxo:#7c3aed; --roxo2:#a855f7; --txt:#e8e8f5; --sub:#8888b0; --verde:#22c55e; }
@@ -122,16 +126,17 @@
   <footer id="rodape">Atualizado automaticamente todo dia 🤖</footer>
 
 <script>
-  // Enquanto não há dados/produtos.json, mostra estes exemplos (demonstração).
+  // Enquanto não há produtos.json (robô ainda não rodou), mostra estes
+  // exemplos, só para você ver o visual da vitrine.
   const DEMO = [
-    { fonte:'Shopee', categoria:'Eletrônicos', emoji:'🎧', titulo:'Fone de Ouvido Bluetooth TWS Pro à prova d\'água', preco:79.90, preco_antigo:159.90, vendas:12400, avaliacao:4.8, link:'#' },
-    { fonte:'Mercado Livre', categoria:'Eletrônicos', emoji:'⌚', titulo:'Smartwatch D20 Relógio Inteligente Monitor Cardíaco', preco:45.00, preco_antigo:89.90, vendas:8900, avaliacao:4.6, link:'#' },
-    { fonte:'Shopee', categoria:'Casa', emoji:'💡', titulo:'Luminária LED de Mesa Articulável 3 Cores Recarregável', preco:34.90, preco_antigo:69.90, vendas:5300, avaliacao:4.9, link:'#' },
-    { fonte:'Shopee', categoria:'Cozinha', emoji:'🍳', titulo:'Kit Organizador de Cozinha Multiuso 6 Peças', preco:59.90, preco_antigo:99.90, vendas:2100, avaliacao:4.7, link:'#' },
-    { fonte:'Mercado Livre', categoria:'Eletrônicos', emoji:'📱', titulo:'Suporte de Celular Articulado para Mesa e Cama', preco:24.90, preco_antigo:39.90, vendas:15600, avaliacao:4.8, link:'#' },
-    { fonte:'Shopee', categoria:'Beleza', emoji:'💄', titulo:'Kit Pincéis de Maquiagem Profissional 12 Unidades', preco:29.90, preco_antigo:79.90, vendas:3400, avaliacao:4.5, link:'#' },
-    { fonte:'Mercado Livre', categoria:'Casa', emoji:'🧹', titulo:'Rodo Mágico Limpa Vidros com Cabo Extensível', preco:38.00, preco_antigo:65.00, vendas:1800, avaliacao:4.4, link:'#' },
-    { fonte:'Shopee', categoria:'Cozinha', emoji:'☕', titulo:'Caneca Térmica Inox 500ml Mantém Temperatura 12h', preco:42.90, preco_antigo:74.90, vendas:6700, avaliacao:4.9, link:'#' },
+    { fonte:'Shopee', emoji:'🎧', titulo:'Fone de Ouvido Bluetooth TWS Pro à prova d\'água', preco:79.90, preco_antigo:159.90, vendas:12400, avaliacao:4.8, link:'#' },
+    { fonte:'Mercado Livre', emoji:'⌚', titulo:'Smartwatch D20 Relógio Inteligente Monitor Cardíaco', preco:45.00, preco_antigo:89.90, vendas:8900, avaliacao:4.6, link:'#' },
+    { fonte:'Shopee', emoji:'💡', titulo:'Luminária LED de Mesa Articulável 3 Cores Recarregável', preco:34.90, preco_antigo:69.90, vendas:5300, avaliacao:4.9, link:'#' },
+    { fonte:'Shopee', emoji:'🍳', titulo:'Kit Organizador de Cozinha Multiuso 6 Peças', preco:59.90, preco_antigo:99.90, vendas:2100, avaliacao:4.7, link:'#' },
+    { fonte:'Mercado Livre', emoji:'📱', titulo:'Suporte de Celular Articulado para Mesa e Cama', preco:24.90, preco_antigo:39.90, vendas:15600, avaliacao:4.8, link:'#' },
+    { fonte:'Shopee', emoji:'💄', titulo:'Kit Pincéis de Maquiagem Profissional 12 Unidades', preco:29.90, preco_antigo:79.90, vendas:3400, avaliacao:4.5, link:'#' },
+    { fonte:'Mercado Livre', emoji:'🧹', titulo:'Rodo Mágico Limpa Vidros com Cabo Extensível', preco:38.00, preco_antigo:65.00, vendas:1800, avaliacao:4.4, link:'#' },
+    { fonte:'Shopee', emoji:'☕', titulo:'Caneca Térmica Inox 500ml Mantém Temperatura 12h', preco:42.90, preco_antigo:74.90, vendas:6700, avaliacao:4.9, link:'#' },
   ];
 
   let TODOS = [];
@@ -142,14 +147,16 @@
 
   async function carregar(){
     try {
-      const r = await fetch('../dados/produtos.json?_='+Date.now());
+      const r = await fetch('produtos.json?_='+Date.now());
       if(!r.ok) throw 0;
       const d = await r.json();
       TODOS = (d.produtos||[]).length ? d.produtos : DEMO;
-      document.getElementById('rodape').textContent =
-        'Atualizado em ' + new Date(d.gerado_em).toLocaleString('pt-BR') + ' 🤖';
+      const usandoDemo = !((d.produtos||[]).length);
+      document.getElementById('rodape').textContent = usandoDemo
+        ? 'Prévia com produtos de exemplo · o robô preenche automático 🤖'
+        : 'Atualizado em ' + new Date(d.gerado_em).toLocaleString('pt-BR') + ' 🤖';
     } catch(e){
-      TODOS = DEMO; // prévia com produtos de exemplo
+      TODOS = DEMO;
       document.getElementById('rodape').textContent = 'Prévia com produtos de exemplo · o robô preenche automático 🤖';
     }
     montarChips();
@@ -211,6 +218,11 @@
 
   document.getElementById('busca').addEventListener('input', render);
   carregar();
+
+  // Registra o service worker (deixa o app instalável e offline).
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
 </script>
 </body>
 </html>
