@@ -87,18 +87,33 @@ Abra o `painel.html` no navegador (de preferência servindo a pasta:
 
 ---
 
-## Deixar rodando 24h num servidor
+## Rodar 24h **sem servidor** (GitHub Actions — grátis) ⭐
 
-Para a "atualização diária" acontecer sem você ligar o PC, rode num
-servidor. Duas opções comuns:
+Você **não precisa de servidor nem deixar o PC ligado**. O próprio GitHub
+roda o robô todo dia de graça, usando o arquivo
+[`.github/workflows/minerar.yml`](../.github/workflows/minerar.yml).
 
-- **`python main.py --agendar`** dentro de um serviço (systemd, PM2,
-  Docker) — o próprio robô cuida do horário.
-- **Cron do sistema** chamando `python main.py` uma vez por dia (aí não
-  precisa do `--agendar`):
-  ```cron
-  0 8 * * *  cd /caminho/minerador && /usr/bin/python3 main.py
-  ```
+Como ligar (uma vez só):
+
+1. **Suba o projeto para o GitHub** (este repositório já está lá).
+2. No GitHub, vá em **Settings → Secrets and variables → Actions**:
+   - Aba **Variables** → crie `PALAVRAS_CHAVE` (ex.: `fone,smartwatch,luminária`)
+     e, se quiser, `LIMITE_POR_BUSCA` (ex.: `20`).
+   - Aba **Secrets** → crie `SHOPEE_APP_ID`, `SHOPEE_APP_SECRET` e
+     `ML_AFFILIATE_TAG` (as credenciais ficam ocultas e seguras).
+3. Pronto. Todo dia às **08:00 (horário de Brasília)** o robô minera
+   sozinho e **salva o `dados/produtos.json` de volta no repositório**.
+
+> Quer testar na hora? Vá na aba **Actions → Minerar produtos (diário) →
+> Run workflow**. Para mudar o horário, edite a linha `cron` do workflow
+> (o valor é sempre em **UTC**; 08:00 de Brasília = `0 11 * * *`).
+
+### Alternativa: rodar no seu próprio computador/servidor
+
+Se um dia tiver uma máquina ligada, também dá:
+
+- **`python main.py --agendar`** — o próprio robô cuida do horário; ou
+- **Cron do sistema** chamando `python main.py` uma vez por dia.
 
 ---
 

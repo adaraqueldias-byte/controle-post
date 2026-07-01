@@ -17,14 +17,18 @@ SHOPEE_APP_ID = os.getenv("SHOPEE_APP_ID", "").strip()
 SHOPEE_APP_SECRET = os.getenv("SHOPEE_APP_SECRET", "").strip()
 
 # --- Parâmetros da mineração ---------------------------------------
+# Se nada for configurado, usa esta lista padrão (facilita o 1º uso).
+PALAVRAS_PADRAO = "fone de ouvido,smartwatch,luminária led,organizador de cozinha"
+
 PALAVRAS_CHAVE = [
     termo.strip()
-    for termo in os.getenv("PALAVRAS_CHAVE", "").split(",")
+    for termo in (os.getenv("PALAVRAS_CHAVE") or PALAVRAS_PADRAO).split(",")
     if termo.strip()
 ]
 
-LIMITE_POR_BUSCA = int(os.getenv("LIMITE_POR_BUSCA", "20"))
-HORARIO_DIARIO = os.getenv("HORARIO_DIARIO", "08:00").strip()
+# `or` protege contra variável definida como string vazia (comum no CI).
+LIMITE_POR_BUSCA = int(os.getenv("LIMITE_POR_BUSCA") or 20)
+HORARIO_DIARIO = (os.getenv("HORARIO_DIARIO") or "08:00").strip()
 
 # --- Caminhos ------------------------------------------------------
 PASTA_DADOS = os.path.join(RAIZ, "dados")
