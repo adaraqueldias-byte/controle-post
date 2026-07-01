@@ -17,6 +17,17 @@ class MercadoLivre(FonteBase):
     nome = "Mercado Livre"
     URL_BUSCA = "https://api.mercadolibre.com/sites/MLB/search"  # MLB = Brasil
 
+    # Cabeçalhos de navegador: a API costuma bloquear (403) requisições com
+    # User-Agent genérico de robô. Simulando um navegador, o acesso passa.
+    HEADERS = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+        ),
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
+    }
+
     def __init__(self):
         self.tag = config.ML_AFFILIATE_TAG
 
@@ -30,7 +41,7 @@ class MercadoLivre(FonteBase):
     def buscar(self, termo: str, limite: int) -> list[Produto]:
         params = {"q": termo, "limit": limite}
         try:
-            resp = requests.get(self.URL_BUSCA, params=params, timeout=20)
+            resp = requests.get(self.URL_BUSCA, params=params, headers=self.HEADERS, timeout=20)
             resp.raise_for_status()
             itens = resp.json().get("results", [])
         except (requests.RequestException, ValueError) as erro:
