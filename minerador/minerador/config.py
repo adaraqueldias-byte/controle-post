@@ -16,6 +16,14 @@ ML_AFFILIATE_TAG = os.getenv("ML_AFFILIATE_TAG", "").strip()
 SHOPEE_APP_ID = os.getenv("SHOPEE_APP_ID", "").strip()
 SHOPEE_APP_SECRET = os.getenv("SHOPEE_APP_SECRET", "").strip()
 
+# --- Telegram (módulo Postador) ------------------------------------
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "").strip()
+# Quantos produtos postar por rodada (evita floodar o canal).
+MAX_POSTS_POR_RODADA = int(os.getenv("MAX_POSTS_POR_RODADA") or 5)
+# Segundos de intervalo entre um post e outro (respeita limites do Telegram).
+INTERVALO_POSTS = int(os.getenv("INTERVALO_POSTS") or 3)
+
 # --- Parâmetros da mineração ---------------------------------------
 # Se nada for configurado, usa esta lista padrão (facilita o 1º uso).
 PALAVRAS_PADRAO = "fone de ouvido,smartwatch,luminária led,organizador de cozinha"

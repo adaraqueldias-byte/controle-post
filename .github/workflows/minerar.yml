@@ -35,23 +35,29 @@ jobs:
       - name: Instalar dependências
         run: pip install -r requirements.txt
 
-      - name: Rodar a mineração
+      - name: Minerar e postar no Telegram
         env:
           # Palavras-chave e limite: configure em Settings > Secrets and
           # variables > Actions > Variables (ficam visíveis, sem segredo).
           PALAVRAS_CHAVE: ${{ vars.PALAVRAS_CHAVE }}
           LIMITE_POR_BUSCA: ${{ vars.LIMITE_POR_BUSCA }}
+          MAX_POSTS_POR_RODADA: ${{ vars.MAX_POSTS_POR_RODADA }}
           # Credenciais: configure na aba Secrets (ficam ocultas).
           ML_AFFILIATE_TAG: ${{ secrets.ML_AFFILIATE_TAG }}
           SHOPEE_APP_ID: ${{ secrets.SHOPEE_APP_ID }}
           SHOPEE_APP_SECRET: ${{ secrets.SHOPEE_APP_SECRET }}
-        run: python main.py
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        # --tudo = minera nas lojas e depois posta os novos no Telegram.
+        run: python main.py --tudo
 
       - name: Salvar os produtos no repositório
+        # Salva o JSON (para exibir) e o banco (guarda o que já foi postado,
+        # para não repetir produtos na próxima execução).
         run: |
           git config user.name "robo-minerador[bot]"
           git config user.email "actions@github.com"
-          git add -f dados/produtos.json
+          git add -f dados/produtos.json dados/produtos.db
           if git diff --staged --quiet; then
             echo "Nenhuma novidade para salvar."
           else

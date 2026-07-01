@@ -76,7 +76,9 @@ Abra o `.env` e preencha:
 ### 3. Rodar
 ```bash
 python main.py            # minera uma vez agora
-python main.py --agendar  # fica rodando e minera todo dia no horário
+python main.py --postar   # posta no Telegram os produtos ainda não postados
+python main.py --tudo     # minera E depois posta no Telegram
+python main.py --agendar  # fica rodando e minera+posta todo dia no horário
 python main.py --exportar # só regenera o JSON a partir do banco
 ```
 
@@ -117,6 +119,28 @@ Se um dia tiver uma máquina ligada, também dá:
 
 ---
 
+## 📣 Postar automático no Telegram
+
+O módulo Postador (`minerador/telegram.py`) pega os produtos minerados e
+publica no seu canal/grupo do Telegram: **foto + título + preço + desconto
++ botão "🛒 Comprar"** com o seu link. Ele marca no banco o que já postou,
+então **nunca repete** o mesmo produto.
+
+### Preparar (uma vez)
+
+1. No Telegram, fale com **@BotFather** → `/newbot` → guarde o **token**.
+2. Crie seu **canal/grupo** e adicione o bot como **administrador**.
+3. Pegue o **chat_id** do canal (ex.: use o **@userinfobot** ou publique
+   algo e leia em `https://api.telegram.org/bot<TOKEN>/getUpdates`).
+4. Preencha no `.env` (ou nos **Secrets do GitHub**):
+   - `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID`
+   - `MAX_POSTS_POR_RODADA` (quantos posts por rodada, padrão 5)
+
+Pronto. Rodando pelo GitHub Actions, todo dia o robô **minera e posta
+sozinho** — de graça, sem servidor. (WhatsApp não entra aqui: exige
+conexão sempre ligada e tem alto risco de banimento; o Telegram é o
+caminho seguro e automatizável.)
+
 ## Como isso se encaixa numa esteira de afiliados
 
 Este módulo é o **"robô minerador que garimpa ofertas 24h"**. O JSON que
@@ -126,8 +150,8 @@ produto) é a matéria-prima para os próximos módulos que você pode plugar:
 | Módulo | O que faz | Status |
 |--------|-----------|--------|
 | **Minerador** | Garimpa ofertas da Shopee/ML com seu link e foto | ✅ este projeto |
+| **Postador** | Publica os produtos no Telegram (foto + link + botão) | ✅ `telegram.py` |
 | **Cupons** | Aplica cupons válidos no link antes de postar | 🔌 encaixa no `Produto.link` |
-| **Postador** | Publica os produtos em grupos (WhatsApp/Telegram) | 🔌 consome o `produtos.json` |
 | **Painel** | Tudo num lugar só, rodando no servidor | ✅ `painel.html` (base) |
 
 Cada peça conversa pelo mesmo `produtos.json`, então dá para crescer aos

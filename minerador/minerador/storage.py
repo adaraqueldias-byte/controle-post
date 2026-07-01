@@ -38,10 +38,18 @@ class Banco:
                     vendas       INTEGER,
                     avaliacao    REAL,
                     coletado_em  TEXT,
-                    atualizado_em TEXT
+                    atualizado_em TEXT,
+                    postado_em   TEXT
                 )
                 """
             )
+            # Migração: garante a coluna postado_em em bancos antigos.
+            colunas = {
+                linha["name"]
+                for linha in con.execute("PRAGMA table_info(produtos)")
+            }
+            if "postado_em" not in colunas:
+                con.execute("ALTER TABLE produtos ADD COLUMN postado_em TEXT")
             con.commit()
 
     def salvar_varios(self, produtos: list[Produto]) -> tuple[int, int]:
@@ -93,3 +101,27 @@ class Banco:
                 f"SELECT * FROM produtos ORDER BY {coluna} DESC"
             ).fetchall()
         return [dict(l) for l in linhas]
+
+    def listar_nao_postados(self, limite: int) -> list[dict]:
+        """Produtos que ainda não foram postados, os mais vendidos primeiro."""
+        with closing(self._conectar()) as con:
+            linhas = con.execute(
+                """
+                SELECT * FROM produtos
+                WHERE postado_em IS NULL
+                ORDER BY vendas DESC, atualizado_em DESC
+                LIMIT ?
+                """,
+                (limite,),
+            ).fetchall()
+        return [dict(l) for l in linhas]
+
+    def marcar_postado(self, chave: str) -> None:
+        from datetime import datetime
+
+        with closing(self._conectar()) as con:
+            con.execute(
+                "UPDATE produtos SET postado_em = ? WHERE chave = ?",
+                (datetime.now().isoformat(timespec="seconds"), chave),
+            )
+            con.commit()
