@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel do Minerador</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, 'Segoe UI', sans-serif;
+    background: #0d0d17; color: #e0e0e0; padding: 16px;
+    max-width: 1100px; margin: 0 auto;
+  }
+  h1 { font-size: 20px; color: #a78bfa; margin-bottom: 4px; }
+  .sub { font-size: 13px; color: #7878a8; margin-bottom: 16px; }
+  .filtros { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filtros input, .filtros select {
+    background: #20203a; border: 1px solid #3a3a5a; color: #e0e0e0;
+    padding: 8px 10px; border-radius: 8px; font-size: 14px;
+  }
+  .filtros input { flex: 1; min-width: 180px; }
+  .grid {
+    display: grid; gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  }
+  .card {
+    background: #16162a; border: 1px solid #262645; border-radius: 12px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .1s, border-color .2s;
+  }
+  .card:hover { transform: translateY(-2px); border-color: #7c3aed; }
+  .card img { width: 100%; aspect-ratio: 1; object-fit: cover; background: #20203a; }
+  .card .corpo { padding: 10px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .fonte {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .5px; padding: 2px 8px; border-radius: 20px; align-self: flex-start;
+  }
+  .fonte.shopee { background: #ee4d2d33; color: #ff7a5c; }
+  .fonte.ml { background: #ffe60033; color: #ffe600; }
+  .titulo { font-size: 13px; line-height: 1.3; color: #d8d8f0;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .preco { font-size: 18px; font-weight: 700; color: #22c55e; }
+  .preco small { font-size: 12px; color: #7878a8; text-decoration: line-through; font-weight: 400; margin-left: 6px; }
+  .desconto { font-size: 11px; color: #ff7a5c; font-weight: 700; }
+  .meta { font-size: 11px; color: #7878a8; }
+  .btn {
+    margin-top: auto; text-align: center; text-decoration: none;
+    background: linear-gradient(135deg, #7c3aed, #9333ea); color: #fff;
+    padding: 8px; border-radius: 8px; font-size: 13px; font-weight: 700;
+  }
+  .vazio { text-align: center; color: #7878a8; padding: 40px; }
+</style>
+</head>
+<body>
+  <h1>🤖 Painel do Minerador</h1>
+  <div class="sub" id="resumo">Carregando dados/produtos.json…</div>
+
+  <div class="filtros">
+    <input id="busca" placeholder="Filtrar por nome do produto…">
+    <select id="fonte">
+      <option value="">Todas as fontes</option>
+      <option value="Shopee">Shopee</option>
+      <option value="Mercado Livre">Mercado Livre</option>
+    </select>
+    <select id="ordem">
+      <option value="atualizado_em">Mais recentes</option>
+      <option value="preco">Menor preço</option>
+      <option value="vendas">Mais vendidos</option>
+    </select>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <script>
+    let TODOS = [];
+
+    async function carregar() {
+      try {
+        const r = await fetch('dados/produtos.json?_=' + Date.now());
+        const dados = await r.json();
+        TODOS = dados.produtos || [];
+        document.getElementById('resumo').textContent =
+          `${dados.total} produtos • gerado em ${new Date(dados.gerado_em).toLocaleString('pt-BR')}`;
+        render();
+      } catch (e) {
+        document.getElementById('resumo').textContent =
+          'Ainda não há dados. Rode o robô: python main.py';
+      }
+    }
+
+    function moeda(v) {
+      return (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function render() {
+      const termo = document.getElementById('busca').value.toLowerCase();
+      const fonte = document.getElementById('fonte').value;
+      const ordem = document.getElementById('ordem').value;
+
+      let lista = TODOS.filter(p =>
+        (!fonte || p.fonte === fonte) &&
+        (!termo || (p.titulo || '').toLowerCase().includes(termo))
+      );
+
+      lista.sort((a, b) => {
+        if (ordem === 'preco') return (a.preco || 0) - (b.preco || 0);
+        if (ordem === 'vendas') return (b.vendas || 0) - (a.vendas || 0);
+        return (b.atualizado_em || '').localeCompare(a.atualizado_em || '');
+      });
+
+      const grid = document.getElementById('grid');
+      if (!lista.length) {
+        grid.innerHTML = '<div class="vazio">Nenhum produto encontrado.</div>';
+        return;
+      }
+
+      grid.innerHTML = lista.map(p => {
+        const classeFonte = p.fonte === 'Shopee' ? 'shopee' : 'ml';
+        const antigo = p.preco_antigo ? `<small>${moeda(p.preco_antigo)}</small>` : '';
+        const desc = p.desconto ? `<div class="desconto">-${p.desconto}% OFF</div>` : '';
+        const vendas = p.vendas ? `${p.vendas} vendas` : '';
+        const nota = p.avaliacao ? ` • ⭐ ${p.avaliacao}` : '';
+        return `
+          <div class="card">
+            <img src="${p.foto}" loading="lazy" alt="" onerror="this.style.opacity=.2">
+            <div class="corpo">
+              <span class="fonte ${classeFonte}">${p.fonte}</span>
+              <div class="titulo">${p.titulo}</div>
+              <div class="preco">${moeda(p.preco)}${antigo}</div>
+              ${desc}
+              <div class="meta">${vendas}${nota}</div>
+              <a class="btn" href="${p.link}" target="_blank" rel="noopener">Ver produto</a>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    ['busca', 'fonte', 'ordem'].forEach(id =>
+      document.getElementById(id).addEventListener('input', render));
+    carregar();
+  </script>
+</body>
+</html>

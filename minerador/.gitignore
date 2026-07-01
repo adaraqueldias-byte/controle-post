@@ -1,0 +1,12 @@
+# Credenciais
+.env
+
+# Banco de dados e saídas geradas
+dados/*.db
+dados/*.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
