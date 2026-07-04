@@ -499,11 +499,48 @@ function chave(d) {
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 function carregar(k) { return JSON.parse(localStorage.getItem('post_' + k) || '[]'); }
+
+function liberarEspacoAutomatico(chaveAtual) {
+  // Pega todas as chaves de dias salvos, ordenadas da mais antiga pra mais nova
+  const chavesDias = Object.keys(localStorage)
+    .filter(k => k.startsWith('post_') && k !== 'post_' + chaveAtual)
+    .sort();
+  let liberouAlgo = false;
+  for (const k of chavesDias) {
+    const dados = JSON.parse(localStorage.getItem(k) || '[]');
+    let mudou = false;
+    dados.forEach(p => { if (p.foto) { delete p.foto; mudou = true; } });
+    if (mudou) {
+      localStorage.setItem(k, JSON.stringify(dados));
+      liberouAlgo = true;
+      // libera aos poucos e testa; para assim que já tiver espaço suficiente
+      break;
+    }
+  }
+  return liberouAlgo;
+}
+
 function salvar(k, dados) {
   try {
     localStorage.setItem('post_' + k, JSON.stringify(dados));
   } catch(e) {
-    alert('⚠️ Memória cheia! Faça um backup agora e remova fotos de produtos antigos para liberar espaço.');
+    // Memória cheia: tenta remover fotos de dias antigos automaticamente e salvar de novo
+    let tentativas = 0;
+    let salvou = false;
+    while (tentativas < 15 && !salvou) {
+      const liberou = liberarEspacoAutomatico(k);
+      if (!liberou) break;
+      try {
+        localStorage.setItem('post_' + k, JSON.stringify(dados));
+        salvou = true;
+      } catch(e2) { /* continua tentando */ }
+      tentativas++;
+    }
+    if (salvou) {
+      alert('📦 A memória estava cheia, então removi automaticamente as fotos de produtos de dias mais antigos (os produtos continuam salvos, só sem a foto). Seu produto novo foi salvo normalmente.');
+    } else {
+      alert('⚠️ Memória cheia! Faça um backup agora e remova fotos de produtos antigos para liberar espaço.');
+    }
   }
 }
 
@@ -644,7 +681,7 @@ function previewFoto(input) {
     // Comprime a imagem para caber no localStorage sem sumir
     const imgEl = new Image();
     imgEl.onload = () => {
-      const MAX = 400;
+      const MAX = 260;
       let w = imgEl.width, h = imgEl.height;
       if (w > MAX || h > MAX) {
         if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
@@ -653,7 +690,7 @@ function previewFoto(input) {
       const canvas = document.createElement('canvas');
       canvas.width = w; canvas.height = h;
       canvas.getContext('2d').drawImage(imgEl, 0, 0, w, h);
-      fotoBase64 = canvas.toDataURL('image/jpeg', 0.7);
+      fotoBase64 = canvas.toDataURL('image/jpeg', 0.5);
       fotoAlterada = true;
       const prev = document.getElementById('preview-foto');
       prev.src = fotoBase64;
