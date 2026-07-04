@@ -393,9 +393,12 @@
   <button class="rodape-btn" onclick="toggleMais()">⋯ Mais</button>
 </div>
 <div id="painel-mais" class="painel-mais">
+  <button onclick="salvarNaNuvem()">☁️ Salvar na nuvem</button>
+  <button onclick="carregarDaNuvem()">⬇️ Carregar da nuvem</button>
   <button onclick="relatorioSemana()">Relatório da semana</button>
   <button onclick="verRelatoriosSalvos()">Relatórios salvos</button>
-  <button onclick="document.getElementById('inp-restaurar').click()">Restaurar backup</button>
+  <button onclick="document.getElementById('inp-restaurar').click()">Restaurar backup (arquivo)</button>
+  <button onclick="configurarNuvem()">⚙️ Configurar nuvem</button>
   <input type="file" id="inp-restaurar" accept=".json" style="display:none" onchange="restaurarBackup(this)">
 </div>
 
@@ -995,6 +998,100 @@ function fecharAvisoBackup() {
 function fazerBackupAviso() {
   fecharAvisoBackup();
   fazerBackup();
+}
+
+// ============ NUVEM (GitHub) — salva tudo online, nunca mais perde ============
+const NUVEM_REPO = 'adaraqueldias-byte/controle-post';
+const NUVEM_ARQUIVO = 'dados-nuvem/backup.json';
+
+function pegarToken() {
+  return localStorage.getItem('gh_token') || '';
+}
+
+function configurarNuvem() {
+  const atual = pegarToken();
+  const msg = atual
+    ? 'Já existe um token configurado. Cole um novo para trocar, ou deixe vazio e toque OK para manter o atual:'
+    : 'Cole aqui o seu token do GitHub (começa com github_pat_). Ele fica guardado só neste aparelho:';
+  const t = prompt(msg, '');
+  if (t === null) return;
+  if (t.trim() === '') { alert('Token mantido.'); return; }
+  localStorage.setItem('gh_token', t.trim());
+  alert('✅ Token salvo neste aparelho! Agora você pode usar "Salvar na nuvem" e "Carregar da nuvem".');
+}
+
+function montarPacoteDados() {
+  const tudo = {};
+  for (let i=0;i<localStorage.length;i++){
+    const k = localStorage.key(i);
+    if (k.startsWith('post_') || k === 'relatorios_salvos') tudo[k] = localStorage.getItem(k);
+  }
+  return tudo;
+}
+
+async function salvarNaNuvem() {
+  const token = pegarToken();
+  if (!token) { alert('Primeiro configure o token em "⚙️ Configurar nuvem".'); return; }
+  const btn = event && event.target;
+  if (btn) btn.textContent = '☁️ Salvando...';
+  try {
+    const dados = JSON.stringify(montarPacoteDados());
+    const conteudo = btoa(unescape(encodeURIComponent(dados)));
+    // Pega o SHA atual do arquivo (se já existir), necessário para atualizar
+    let sha = null;
+    const urlGet = 'https://api.github.com/repos/' + NUVEM_REPO + '/contents/' + NUVEM_ARQUIVO;
+    const resp = await fetch(urlGet, { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json' } });
+    if (resp.status === 200) { const j = await resp.json(); sha = j.sha; }
+    const corpo = {
+      message: 'backup ' + new Date().toISOString(),
+      content: conteudo
+    };
+    if (sha) corpo.sha = sha;
+    const put = await fetch(urlGet, {
+      method: 'PUT',
+      headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(corpo)
+    });
+    if (put.ok) {
+      localStorage.setItem('nuvem_ultimo_salvo', new Date().toISOString());
+      alert('☁️ Tudo salvo na nuvem com sucesso! Seus produtos e fotos estão seguros no GitHub.');
+    } else {
+      const err = await put.json();
+      alert('Não consegui salvar. Verifique o token (precisa de permissão Contents: Read and write).\n\nDetalhe: ' + (err.message || put.status));
+    }
+  } catch(e) {
+    alert('Erro ao salvar na nuvem. Verifique sua internet.\n\n' + e.message);
+  } finally {
+    if (btn) btn.textContent = '☁️ Salvar na nuvem';
+  }
+}
+
+async function carregarDaNuvem() {
+  const token = pegarToken();
+  if (!token) { alert('Primeiro configure o token em "⚙️ Configurar nuvem".'); return; }
+  if (!confirm('Isso vai trazer os dados salvos na nuvem e SUBSTITUIR os dados atuais deste aparelho. Continuar?')) return;
+  const btn = event && event.target;
+  if (btn) btn.textContent = '⬇️ Carregando...';
+  try {
+    const url = 'https://api.github.com/repos/' + NUVEM_REPO + '/contents/' + NUVEM_ARQUIVO + '?t=' + Date.now();
+    const resp = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json' } });
+    if (resp.status === 404) { alert('Ainda não há nada salvo na nuvem. Use "Salvar na nuvem" primeiro.'); return; }
+    if (!resp.ok) { alert('Não consegui carregar. Verifique o token.'); return; }
+    const j = await resp.json();
+    const texto = decodeURIComponent(escape(atob(j.content.replace(/\n/g, ''))));
+    const tudo = JSON.parse(texto);
+    // Remove dados locais antigos de posts/relatorios antes de restaurar
+    Object.keys(localStorage).forEach(k => {
+      if (k.startsWith('post_') || k === 'relatorios_salvos') localStorage.removeItem(k);
+    });
+    Object.keys(tudo).forEach(k => localStorage.setItem(k, tudo[k]));
+    alert('✅ Dados carregados da nuvem com sucesso!');
+    renderDia();
+  } catch(e) {
+    alert('Erro ao carregar da nuvem.\n\n' + e.message);
+  } finally {
+    if (btn) btn.textContent = '⬇️ Carregar da nuvem';
+  }
 }
 
 renderDia();
