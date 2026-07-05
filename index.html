@@ -89,10 +89,10 @@
   .acoes-topo .btn-imprimir { flex: 1; }
   .btn-add {
     display: flex; align-items: center; justify-content: center; gap: 6px;
-    flex: 1; padding: 10px;
+    flex: 1; padding: 8px;
     background: linear-gradient(135deg, #7c3aed, #9333ea);
     border: none; border-radius: 10px;
-    color: #fff; font-size: 14px; font-weight: 700;
+    color: #fff; font-size: 13px; font-weight: 700;
     cursor: pointer;
     transition: filter .2s, transform .1s;
     box-shadow: 0 4px 14px rgba(124,58,237,.3);
@@ -603,8 +603,8 @@ function renderBalanco(dados) {
   }).join('');
 
   cont.innerHTML = `<div class="balanco-wrap">
-    <span class="balanco-titulo">Hoje<span class="editar" onclick="configurarMeta()">(meta ${meta})</span></span>
     <span class="balanco-chips">${chips}</span>
+    <span class="editar" style="font-size:10px;color:#a78bfa;cursor:pointer;margin-left:auto;" onclick="configurarMeta()">meta ${meta}</span>
   </div>`;
 }
 
