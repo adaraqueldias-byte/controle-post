@@ -237,10 +237,9 @@
     text-transform: uppercase; letter-spacing: .8px; margin-top: 4px;
   }
   .canais { display: flex; flex-wrap: wrap; gap: 5px; }
-  .balanco-wrap { background:#18182c; border-radius:10px; padding:6px 8px; margin-bottom:14px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-  .balanco-titulo { font-size:10px; font-weight:700; color:#8a8ac0; text-transform:uppercase; letter-spacing:.5px; }
-  .balanco-titulo .editar { color:#a78bfa; font-weight:600; text-transform:none; letter-spacing:0; cursor:pointer; margin-left:6px; }
-  .balanco-chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .balanco-wrap { background:#18182c; border-radius:10px; padding:6px 10px; margin-bottom:14px; display:flex; align-items:flex-end; justify-content:space-between; gap:8px; }
+  .balanco-linhas { display:flex; flex-direction:column; gap:3px; }
+  .balanco-linha { display:flex; gap:12px; }
   .balanco-chip { font-size:10.5px; font-weight:700; white-space:nowrap; }
   .balanco-chip.ok { color:#6ee7a7; }
   .balanco-chip.baixo { color:#fbbf24; }
@@ -576,7 +575,11 @@ function itensDoProduto(p) {
   return todosItens(loja);
 }
 
-const ORDEM_BALANCO = ['shopee', 'mercadolivre', 'amazon', 'amazon_us', 'magalu', 'shein'];
+const ORDEM_BALANCO = [
+  ['shopee', 'mercadolivre'],
+  ['amazon', 'amazon_us'],
+  ['magalu', 'shein'],
+];
 
 function metaPorLoja() {
   return parseInt(localStorage.getItem('meta_produtos_loja') || '3', 10);
@@ -599,17 +602,20 @@ function renderBalanco(dados) {
   Object.keys(LOJAS).forEach(l => contagem[l] = 0);
   dados.forEach(p => { if (contagem[p.loja] !== undefined) contagem[p.loja]++; });
 
-  const chips = ORDEM_BALANCO.map(l => {
-    const n = contagem[l];
-    let classe = 'ok';
-    if (n === 0) classe = 'zero';
-    else if (n < meta) classe = 'baixo';
-    return `<span class="balanco-chip ${classe}">${LOJAS[l]} ${n}</span>`;
+  const linhas = ORDEM_BALANCO.map(linha => {
+    const chips = linha.map(l => {
+      const n = contagem[l];
+      let classe = 'ok';
+      if (n === 0) classe = 'zero';
+      else if (n < meta) classe = 'baixo';
+      return `<span class="balanco-chip ${classe}">${LOJAS[l]} ${n}</span>`;
+    }).join('');
+    return `<div class="balanco-linha">${chips}</div>`;
   }).join('');
 
   cont.innerHTML = `<div class="balanco-wrap">
-    <span class="balanco-chips">${chips}</span>
-    <span class="editar" style="font-size:10px;color:#a78bfa;cursor:pointer;margin-left:auto;" onclick="configurarMeta()">meta ${meta}</span>
+    <div class="balanco-linhas">${linhas}</div>
+    <span class="editar" style="font-size:10px;color:#a78bfa;cursor:pointer;" onclick="configurarMeta()">meta ${meta}</span>
   </div>`;
 }
 
