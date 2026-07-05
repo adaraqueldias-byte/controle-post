@@ -236,11 +236,11 @@
     text-transform: uppercase; letter-spacing: .8px; margin-top: 4px;
   }
   .canais { display: flex; flex-wrap: wrap; gap: 5px; }
-  .balanco-wrap { background:#18182c; border-radius:12px; padding:8px 10px; margin-bottom:14px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .balanco-wrap { background:#18182c; border-radius:10px; padding:6px 8px; margin-bottom:14px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
   .balanco-titulo { font-size:10px; font-weight:700; color:#8a8ac0; text-transform:uppercase; letter-spacing:.5px; }
   .balanco-titulo .editar { color:#a78bfa; font-weight:600; text-transform:none; letter-spacing:0; cursor:pointer; margin-left:6px; }
-  .balanco-chips { display:flex; flex-wrap:wrap; gap:10px; }
-  .balanco-chip { font-size:12px; font-weight:700; white-space:nowrap; }
+  .balanco-chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .balanco-chip { font-size:10.5px; font-weight:700; white-space:nowrap; }
   .balanco-chip.ok { color:#6ee7a7; }
   .balanco-chip.baixo { color:#fbbf24; }
   .balanco-chip.zero { color:#f87171; }
@@ -573,6 +573,8 @@ function itensDoProduto(p) {
   return todosItens(loja);
 }
 
+const ORDEM_BALANCO = ['shopee', 'magalu', 'mercadolivre', 'amazon', 'shein'];
+
 function metaPorLoja() {
   return parseInt(localStorage.getItem('meta_produtos_loja') || '3', 10);
 }
@@ -594,7 +596,7 @@ function renderBalanco(dados) {
   Object.keys(LOJAS).forEach(l => contagem[l] = 0);
   dados.forEach(p => { if (contagem[p.loja] !== undefined) contagem[p.loja]++; });
 
-  const chips = Object.keys(LOJAS).map(l => {
+  const chips = ORDEM_BALANCO.map(l => {
     const n = contagem[l];
     let classe = 'ok';
     if (n === 0) classe = 'zero';
