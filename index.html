@@ -236,6 +236,14 @@
     text-transform: uppercase; letter-spacing: .8px; margin-top: 4px;
   }
   .canais { display: flex; flex-wrap: wrap; gap: 5px; }
+  .balanco-wrap { background:#18182c; border-radius:14px; padding:10px 12px; margin-bottom:14px; }
+  .balanco-titulo { font-size:11px; font-weight:700; color:#8a8ac0; text-transform:uppercase; letter-spacing:.5px; display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .balanco-titulo span.editar { color:#a78bfa; font-weight:600; text-transform:none; letter-spacing:0; cursor:pointer; }
+  .balanco-chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .balanco-chip { display:flex; align-items:center; gap:5px; padding:5px 10px; border-radius:20px; font-size:12.5px; font-weight:600; background:#242445; color:#c4c4e8; }
+  .balanco-chip.ok { background:#16352a; color:#6ee7a7; }
+  .balanco-chip.baixo { background:#3a2a17; color:#fbbf24; }
+  .balanco-chip.zero { background:#3a1a1a; color:#f87171; }
 
   .canal {
     display: flex; align-items: center; gap: 3px;
@@ -383,6 +391,8 @@
 
 <div id="aviso-backup-wrap"></div>
 
+<div id="balanco-lojas"></div>
+
 <button class="btn-add" onclick="abrirModal()" style="width:100%;margin-bottom:14px">＋ Adicionar produto</button>
 
 <div id="lista"></div>
@@ -460,23 +470,24 @@
 
 <script>
 const PASSOS_LOJA = {
-  shopee:        { id: 'vitrine',           nome: 'Vitrine afiliado' },
-  mercadolivre:  { id: 'meus_links',        nome: 'Meus Links ML' },
-  amazon:        { id: 'meus_links_amazon', nome: 'Meus Links Amazon' },
+  shopee:        { id: 'vitrine',           nome: 'Vitrine afiliado', grupo: 'Shopee' },
+  mercadolivre:  { id: 'meus_links',        nome: 'Meus Links ML', grupo: 'Mercado Livre' },
+  amazon:        { id: 'meus_links_amazon', nome: 'Meus Links Amazon', grupo: 'Amazon' },
 };
 
 const CANAIS = [
   { id: 'canal_whats',    nome: 'WhatsApp',     grupo: 'Canais' },
   { id: 'canal_telegram', nome: 'Telegram',     grupo: 'Canais' },
-  { id: 'story_whats',    nome: 'Status (Zap)', grupo: 'Story' },
-  { id: 'story_insta',    nome: 'Instagram',    grupo: 'Story' },
-  { id: 'story_face',     nome: 'Facebook',     grupo: 'Story' },
-  { id: 'feed_insta',     nome: 'Instagram',    grupo: 'Post Carrossel' },
-  { id: 'feed_face',      nome: 'Facebook',     grupo: 'Post Carrossel' },
-  { id: 'reels_insta',    nome: 'Instagram',    grupo: 'Reels' },
-  { id: 'reels_face',     nome: 'Facebook',     grupo: 'Reels' },
+  { id: 'story_whats',    nome: 'Status (Zap)', grupo: 'Canais' },
+  { id: 'story_insta',    nome: 'Story',        grupo: 'Instagram' },
+  { id: 'feed_insta',     nome: 'Feed',         grupo: 'Instagram' },
+  { id: 'reels_insta',    nome: 'Reels',        grupo: 'Instagram' },
+  { id: 'story_face',     nome: 'Story',        grupo: 'Facebook' },
+  { id: 'feed_face',      nome: 'Feed',         grupo: 'Facebook' },
+  { id: 'reels_face',     nome: 'Reels',        grupo: 'Facebook' },
+  { id: 'face_grupos',    nome: 'Grupos',       grupo: 'Facebook' },
+  { id: 'yt_video',       nome: 'Canal',        grupo: 'YouTube' },
   { id: 'yt_shorts',      nome: 'Shorts',       grupo: 'YouTube' },
-  { id: 'yt_video',       nome: 'Vídeo',        grupo: 'YouTube' },
   { id: 'tiktok',         nome: 'TikTok',       grupo: 'TikTok' },
   { id: 'tiktok_shop',    nome: 'TikTok Shop',  grupo: 'TikTok' },
 ];
@@ -547,17 +558,55 @@ function salvar(k, dados) {
   }
 }
 
-const SHOPEE_VIDEO = { id: 'shopee_video', nome: 'Shopee Vídeo', grupo: '' };
+const SHOPEE_VIDEO = { id: 'shopee_video', nome: 'Shopee Vídeo', grupo: 'Shopee' };
 
 function todosItens(loja) {
   const passo = PASSOS_LOJA[loja];
-  const base = passo ? [passo, ...CANAIS] : [...CANAIS];
-  return loja === 'shopee' ? [...base, SHOPEE_VIDEO] : base;
+  if (loja === 'shopee') {
+    return passo ? [passo, SHOPEE_VIDEO, ...CANAIS] : [SHOPEE_VIDEO, ...CANAIS];
+  }
+  return passo ? [passo, ...CANAIS] : [...CANAIS];
 }
 // Todo produto mostra todos os ícones da sua loja (simples: marca verde conforme posta)
 function itensDoProduto(p) {
   const loja = (typeof p === 'string') ? p : p.loja;
   return todosItens(loja);
+}
+
+function metaPorLoja() {
+  return parseInt(localStorage.getItem('meta_produtos_loja') || '3', 10);
+}
+
+function configurarMeta() {
+  const atual = metaPorLoja();
+  const v = prompt('Quantos produtos por plataforma você quer postar por dia, no mínimo?', String(atual));
+  if (v === null) return;
+  const n = parseInt(v, 10);
+  if (isNaN(n) || n < 1) { alert('Digite um número válido (1 ou mais).'); return; }
+  localStorage.setItem('meta_produtos_loja', String(n));
+  renderDia();
+}
+
+function renderBalanco(dados) {
+  const cont = document.getElementById('balanco-lojas');
+  const meta = metaPorLoja();
+  const contagem = {};
+  Object.keys(LOJAS).forEach(l => contagem[l] = 0);
+  dados.forEach(p => { if (contagem[p.loja] !== undefined) contagem[p.loja]++; });
+
+  const chips = Object.keys(LOJAS).map(l => {
+    const n = contagem[l];
+    let classe = 'ok';
+    if (n === 0) classe = 'zero';
+    else if (n < meta) classe = 'baixo';
+    const icone = n >= meta ? '✅' : (n === 0 ? '⚠️' : '🔸');
+    return `<span class="balanco-chip ${classe}">${icone} ${LOJAS[l]} ${n}/${meta}</span>`;
+  }).join('');
+
+  cont.innerHTML = `<div class="balanco-wrap">
+    <div class="balanco-titulo"><span>Equilíbrio entre plataformas hoje</span><span class="editar" onclick="configurarMeta()">✏️ meta: ${meta}</span></div>
+    <div class="balanco-chips">${chips}</div>
+  </div>`;
 }
 
 function renderDia() {
@@ -568,6 +617,8 @@ function renderDia() {
   document.getElementById('dia-nome').textContent = DIAS_SEMANA[d.getDay()];
   document.getElementById('dia-data').textContent =
     d.getDate() + ' de ' + MESES[d.getMonth()] + ' de ' + d.getFullYear();
+
+  renderBalanco(dados);
 
   const bh = document.getElementById('badge-hoje');
   if (offsetDia === 0) bh.innerHTML = '<span class="badge-hoje">Hoje</span>';
