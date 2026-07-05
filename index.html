@@ -338,6 +338,17 @@
   .rel-folha .rsub { font-size: 13px; color: #555; margin-bottom: 6px; }
   .rel-folha .resumo-rel { font-size: 13px; color: #6d28d9; font-weight: bold; margin-bottom: 14px; }
   .rel-folha table { border-collapse: collapse; width: 100%; font-size: 11px; }
+  .rel-cards { display: flex; flex-direction: column; gap: 10px; }
+  .rel-card { border: 1px solid #ddd; border-radius: 10px; padding: 8px 10px; background: #fff; }
+  .rel-card-topo { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+  .rel-card-num { font-weight: 700; color: #6d28d9; font-size: 12px; }
+  .rel-card-nome { font-size: 12.5px; font-weight: 600; color: #222; flex: 1; min-width: 0; word-break: break-word; }
+  .rel-card-pct { font-size: 11px; font-weight: 700; color: #6d28d9; }
+  .rel-grupo-tit { font-size: 9.5px; font-weight: 700; color: #8a8a8a; text-transform: uppercase; letter-spacing: .4px; margin: 6px 0 3px; }
+  .rel-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .rel-chip { font-size: 10.5px; font-weight: 700; padding: 3px 7px; border-radius: 8px; white-space: nowrap; }
+  .rel-chip.ok { background: #dcfce7; color: #16a34a; }
+  .rel-chip.falta { background: #fee2e2; color: #dc2626; }
   .rel-folha th, .rel-folha td { border: 1px solid #bbb; padding: 5px 6px; text-align: center; }
   .rel-folha th { background: #6d28d9; color: #fff; font-size: 10px; }
   .rel-folha th.loja, .rel-folha th.prod, .rel-folha td.loja, .rel-folha td.prod { text-align: left; }
@@ -886,30 +897,42 @@ function relatorioDia() {
   const dados = carregar(chave(d));
   if (dados.length === 0) { alert('Nenhum produto neste dia para gerar relatório.'); return; }
   const dataTxt = DIAS_SEMANA[d.getDay()] + ', ' + d.getDate() + ' de ' + MESES[d.getMonth()] + ' de ' + d.getFullYear();
-  const colunas = ['1º passo', ...CANAIS.map(c => c.grupo ? c.grupo + ' ' + c.nome : c.nome)];
 
-  // ✔ verde = postado · ✗ vermelho = falta postar · — cinza = não usa neste produto
-  const celula = (id, usados, can) => {
-    if (!usados.has(id)) return '<td class="cel-na">—</td>';
-    return can[id] ? '<td class="cel-ok">✔</td>' : '<td class="cel-falta">✗</td>';
-  };
-  let linhas = '';
-  dados.forEach(p => {
-    const passo = PASSOS_LOJA[p.loja];
+  let cards = '';
+  dados.forEach((p, i) => {
     const can = p.canais || {};
-    const usados = new Set(itensDoProduto(p).map(c => c.id));
-    let tds = celula(passo ? passo.id : '__', usados, can);
-    CANAIS.forEach(c => { tds += celula(c.id, usados, can); });
-    linhas += `<tr><td class="loja">${LOJAS[p.loja]||p.loja}</td><td class="prod">${escapar(p.nome)}</td>${tds}</tr>`;
+    const itens = itensDoProduto(p);
+    let grupoAtual = '\0';
+    let corpoGrupos = '';
+    itens.forEach(c => {
+      const g = c.grupo || '';
+      if (g !== grupoAtual) {
+        if (grupoAtual !== '\0') corpoGrupos += '</div>';
+        if (g) corpoGrupos += `<div class="rel-grupo-tit">${g}</div>`;
+        corpoGrupos += '<div class="rel-chips">';
+        grupoAtual = g;
+      }
+      const ok = !!can[c.id];
+      corpoGrupos += `<span class="rel-chip ${ok ? 'ok' : 'falta'}">${ok ? '✔' : '✗'} ${c.nome}</span>`;
+    });
+    if (grupoAtual !== '\0') corpoGrupos += '</div>';
+    const marcados = itens.filter(c => can[c.id]).length;
+    cards += `<div class="rel-card">
+      <div class="rel-card-topo">
+        <span class="rel-card-num">${i + 1}.</span>
+        <span class="loja-badge loja-${p.loja}">${LOJAS[p.loja] || p.loja}</span>
+        <span class="rel-card-nome">${escapar(p.nome)}</span>
+        <span class="rel-card-pct">${marcados}/${itens.length}</span>
+      </div>
+      ${corpoGrupos}
+    </div>`;
   });
-  const thead = '<th class="loja">Loja</th><th class="prod">Produto</th>' + colunas.map(c => `<th>${c}</th>`).join('');
-  const s = statsDia(dados);
 
+  const s = statsDia(dados);
   const corpo = `<h1>Relatório do dia</h1>
     <div class="rsub">${dataTxt}</div>
     <div class="resumo-rel">${s.produtos} produtos · ${s.feitos}/${s.possiveis} postagens · ${s.completos} concluídos</div>
-    <div class="rel-legenda"><b style="color:#16a34a">✔ postado</b> &nbsp; <b style="color:#dc2626">✗ falta postar</b> &nbsp; <b style="color:#bbb">— não usa</b></div>
-    <table><thead><tr>${thead}</tr></thead><tbody>${linhas}</tbody></table>`;
+    <div class="rel-cards">${cards}</div>`;
   abrirRelatorio('Relatório do dia — ' + dataTxt, corpo);
 }
 
