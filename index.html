@@ -236,16 +236,14 @@
     text-transform: uppercase; letter-spacing: .8px; margin-top: 4px;
   }
   .canais { display: flex; flex-wrap: wrap; gap: 5px; }
-  .balanco-wrap { background:#18182c; border-radius:14px; padding:10px 12px; margin-bottom:14px; }
-  .balanco-titulo { font-size:11px; font-weight:700; color:#8a8ac0; text-transform:uppercase; letter-spacing:.5px; display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
-  .balanco-titulo span.editar { color:#a78bfa; font-weight:600; text-transform:none; letter-spacing:0; cursor:pointer; }
-  .balanco-chips { display:flex; flex-wrap:wrap; gap:8px; }
-  .balanco-chip { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; min-width:64px; padding:8px 6px; border-radius:12px; background:#242445; }
-  .balanco-num { font-size:22px; font-weight:800; line-height:1; color:#c4c4e8; }
-  .balanco-nome { font-size:10.5px; font-weight:600; color:#9a9ac8; text-align:center; }
-  .balanco-chip.ok .balanco-num { color:#6ee7a7; }
-  .balanco-chip.baixo .balanco-num { color:#fbbf24; }
-  .balanco-chip.zero .balanco-num { color:#f87171; }
+  .balanco-wrap { background:#18182c; border-radius:12px; padding:8px 10px; margin-bottom:14px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .balanco-titulo { font-size:10px; font-weight:700; color:#8a8ac0; text-transform:uppercase; letter-spacing:.5px; }
+  .balanco-titulo .editar { color:#a78bfa; font-weight:600; text-transform:none; letter-spacing:0; cursor:pointer; margin-left:6px; }
+  .balanco-chips { display:flex; flex-wrap:wrap; gap:10px; }
+  .balanco-chip { font-size:12px; font-weight:700; white-space:nowrap; }
+  .balanco-chip.ok { color:#6ee7a7; }
+  .balanco-chip.baixo { color:#fbbf24; }
+  .balanco-chip.zero { color:#f87171; }
 
   .canal {
     display: flex; align-items: center; gap: 3px;
@@ -601,12 +599,12 @@ function renderBalanco(dados) {
     let classe = 'ok';
     if (n === 0) classe = 'zero';
     else if (n < meta) classe = 'baixo';
-    return `<span class="balanco-chip ${classe}"><span class="balanco-num">${n}</span><span class="balanco-nome">${LOJAS[l]}</span></span>`;
+    return `<span class="balanco-chip ${classe}">${LOJAS[l]} ${n}</span>`;
   }).join('');
 
   cont.innerHTML = `<div class="balanco-wrap">
-    <div class="balanco-titulo"><span>Equilíbrio entre plataformas hoje</span><span class="editar" onclick="configurarMeta()">✏️ meta: ${meta}</span></div>
-    <div class="balanco-chips">${chips}</div>
+    <span class="balanco-titulo">Hoje<span class="editar" onclick="configurarMeta()">(meta ${meta})</span></span>
+    <span class="balanco-chips">${chips}</span>
   </div>`;
 }
 
