@@ -492,13 +492,22 @@ const CANAIS = [
   { id: 'story_whats',    nome: 'Status',        grupo: 'WhatsApp' },
   { id: 'canal_whats',    nome: 'Canal',        grupo: 'WhatsApp' },
   { id: 'canal_telegram', nome: 'Canal',        grupo: 'Telegram' },
-  { id: 'story_insta',    nome: 'Story',        grupo: 'Instagram' },
-  { id: 'feed_insta',     nome: 'Feed',         grupo: 'Instagram' },
-  { id: 'reels_insta',    nome: 'Reels',        grupo: 'Instagram' },
-  { id: 'story_face',     nome: 'Story',        grupo: 'Facebook' },
-  { id: 'feed_face',      nome: 'Feed',         grupo: 'Facebook' },
-  { id: 'reels_face',     nome: 'Reels',        grupo: 'Facebook' },
-  { id: 'face_grupos',    nome: 'Grupos',       grupo: 'Facebook' },
+  { id: 'reels_face_garimpodia',     nome: 'Reels',     grupo: 'Facebook · Garimpodia' },
+  { id: 'feed_face_garimpodia',      nome: 'Feed',      grupo: 'Facebook · Garimpodia' },
+  { id: 'story_face_garimpodia',     nome: 'Story',     grupo: 'Facebook · Garimpodia' },
+  { id: 'grupos_face_garimpodia',    nome: 'Grupos',    grupo: 'Facebook · Garimpodia' },
+  { id: 'reels_face_dashein',        nome: 'Reels',     grupo: 'Facebook · DaShein' },
+  { id: 'feed_face_dashein',         nome: 'Feed',      grupo: 'Facebook · DaShein' },
+  { id: 'story_face_dashein',        nome: 'Story',     grupo: 'Facebook · DaShein' },
+  { id: 'grupos_face_dashein',       nome: 'Grupos',    grupo: 'Facebook · DaShein' },
+  { id: 'reels_insta_dashein',       nome: 'Reels',     grupo: 'Instagram · DaShein' },
+  { id: 'feed_insta_dashein',        nome: 'Feed',      grupo: 'Instagram · DaShein' },
+  { id: 'carrossel_insta_dashein',   nome: 'Carrossel', grupo: 'Instagram · DaShein' },
+  { id: 'story_insta_dashein',       nome: 'Story',     grupo: 'Instagram · DaShein' },
+  { id: 'reels_insta_garimpo',       nome: 'Reels',     grupo: 'Instagram · Garimpo Digital' },
+  { id: 'feed_insta_garimpo',        nome: 'Feed',      grupo: 'Instagram · Garimpo Digital' },
+  { id: 'carrossel_insta_garimpo',   nome: 'Carrossel', grupo: 'Instagram · Garimpo Digital' },
+  { id: 'story_insta_garimpo',       nome: 'Story',     grupo: 'Instagram · Garimpo Digital' },
   { id: 'yt_video',       nome: 'Canal',        grupo: 'YouTube' },
   { id: 'yt_shorts',      nome: 'Shorts',       grupo: 'YouTube' },
   { id: 'tiktok',         nome: 'TikTok',       grupo: 'TikTok' },
@@ -525,7 +534,38 @@ function diaAtual() {
 function chave(d) {
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
-function carregar(k) { return JSON.parse(localStorage.getItem('post_' + k) || '[]'); }
+// Migração: os canais genéricos de Facebook/Instagram viraram canais por página.
+// Como não dava pra saber em qual página cada marcação antiga foi feita,
+// replicamos o "feito" pras páginas novas daquela rede, sem perder o progresso.
+const MIGRACAO_CANAIS = {
+  story_face: ['story_face_garimpodia', 'story_face_dashein'],
+  feed_face:  ['feed_face_garimpodia',  'feed_face_dashein'],
+  reels_face: ['reels_face_garimpodia', 'reels_face_dashein'],
+  face_grupos:['grupos_face_garimpodia','grupos_face_dashein'],
+  story_insta:['story_insta_dashein',   'story_insta_garimpo'],
+  feed_insta: ['feed_insta_dashein',    'feed_insta_garimpo'],
+  reels_insta:['reels_insta_dashein',   'reels_insta_garimpo'],
+};
+function migrarCanaisProduto(p) {
+  if (!p.canais) return false;
+  let mudou = false;
+  Object.keys(MIGRACAO_CANAIS).forEach(idAntigo => {
+    if (p.canais[idAntigo]) {
+      MIGRACAO_CANAIS[idAntigo].forEach(idNovo => { p.canais[idNovo] = true; });
+      delete p.canais[idAntigo];
+      mudou = true;
+    }
+  });
+  return mudou;
+}
+
+function carregar(k) {
+  const dados = JSON.parse(localStorage.getItem('post_' + k) || '[]');
+  let mudou = false;
+  dados.forEach(p => { if (migrarCanaisProduto(p)) mudou = true; });
+  if (mudou) salvar(k, dados);
+  return dados;
+}
 
 function liberarEspacoAutomatico(chaveAtual) {
   // Pega todas as chaves de dias salvos, ordenadas da mais antiga pra mais nova
