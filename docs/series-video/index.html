@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Série de Vídeos IA</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7c3aed">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0d0d17;
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 14px 14px 60px;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .app-titulo {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #a78bfa;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .app-subtitulo {
+    text-align: center;
+    font-size: 11px;
+    color: #6b6b8a;
+    margin-bottom: 18px;
+  }
+
+  .card {
+    background: #16162a;
+    border: 1px solid #26264a;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .card h2 {
+    font-size: 14px;
+    color: #a78bfa;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card h2 .num {
+    background: #7c3aed;
+    color: #fff;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  label { display: block; font-size: 12px; color: #b0b0d0; margin: 10px 0 5px; }
+  label:first-child { margin-top: 0; }
+
+  input[type="text"], input[type="password"], input[type="number"], textarea, select {
+    width: 100%;
+    background: #0d0d17;
+    border: 1px solid #2c2c50;
+    color: #e0e0e0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: #7c3aed; }
+
+  .aviso {
+    font-size: 11px;
+    color: #f0b429;
+    background: #2a2410;
+    border: 1px solid #4a3f10;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+  .dica {
+    font-size: 11px;
+    color: #7a7a9a;
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  .btn {
+    background: #7c3aed;
+    color: #fff;
+    border: none;
+    padding: 11px 16px;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s, transform .1s;
+    width: 100%;
+    margin-top: 12px;
+  }
+  .btn:hover { background: #8b52f0; }
+  .btn:active { transform: scale(.98); }
+  .btn:disabled { background: #3a3a56; cursor: not-allowed; }
+  .btn-sec {
+    background: #20203a;
+    color: #cfcfe8;
+  }
+  .btn-sec:hover { background: #2a2a4a; }
+  .btn-sm { width: auto; padding: 7px 12px; font-size: 12px; margin-top: 0; }
+
+  .row { display: flex; gap: 8px; align-items: center; }
+  .row > * { flex: 1; }
+
+  .status {
+    font-size: 12px;
+    margin-top: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    display: none;
+  }
+  .status.ok { display: block; background: #10291c; color: #4ade80; border: 1px solid #1c4a30; }
+  .status.erro { display: block; background: #2a1414; color: #f87171; border: 1px solid #4a1c1c; }
+  .status.info { display: block; background: #14202a; color: #7dd3fc; border: 1px solid #1c344a; }
+
+  .cena {
+    background: #0d0d17;
+    border: 1px solid #26264a;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .cena-topo { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .cena-topo span { font-size: 12px; color: #a78bfa; font-weight: 600; }
+  .cena-preview {
+    width: 100%;
+    aspect-ratio: 9/16;
+    max-height: 220px;
+    background: #1a1a30;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #4a4a6a;
+    font-size: 12px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .cena-preview img { width: 100%; height: 100%; object-fit: cover; }
+
+  .barra-progresso {
+    width: 100%;
+    height: 10px;
+    background: #0d0d17;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 10px;
+    border: 1px solid #2c2c50;
+  }
+  .barra-progresso > div {
+    height: 100%;
+    background: #7c3aed;
+    width: 0%;
+    transition: width .2s;
+  }
+
+  video#resultadoVideo {
+    width: 100%;
+    border-radius: 10px;
+    margin-top: 10px;
+    background: #000;
+  }
+
+  .custo { font-size: 12px; color: #7a7a9a; margin-top: 8px; }
+
+  .oculto { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="app-titulo">Série de Vídeos IA</div>
+<div class="app-subtitulo">Imagens de IA + música + movimento — do tema ao vídeo pronto</div>
+
+<!-- 1. CHAVES DE API -->
+<div class="card">
+  <h2><span class="num">1</span> Suas chaves de API</h2>
+  <label for="openaiKey">Chave da OpenAI (roteiro de cenas + imagem alternativa)</label>
+  <input type="password" id="openaiKey" placeholder="sk-...">
+  <label for="bflKey">Chave da BFL / Flux (imagens — bfl.ai)</label>
+  <input type="password" id="bflKey" placeholder="Cole sua chave da Black Forest Labs">
+  <div class="row" style="margin-top:12px">
+    <button class="btn btn-sec" id="btnTestarChaves">Testar chave OpenAI</button>
+    <button class="btn btn-sec" id="btnSalvarChaves">Salvar chaves</button>
+  </div>
+  <div class="status" id="statusChaves"></div>
+  <div class="aviso">
+    ⚠️ As chaves ficam salvas <b>só neste aparelho</b> (localStorage do navegador).
+    Este app é para uso pessoal — não publique/compartilhe este link com as chaves salvas,
+    pois quem acessar poderá gastar seu crédito.
+  </div>
+  <div class="dica">
+    Crie a chave OpenAI em platform.openai.com/api-keys e a da Flux em bfl.ai — ambas exigem
+    um pequeno crédito pré-pago (cobrado por uso, à parte de qualquer assinatura como
+    ChatGPT Plus, que não serve para isso).
+  </div>
+</div>
+
+<!-- 2. ROTEIRO -->
+<div class="card">
+  <h2><span class="num">2</span> Tema da série</h2>
+  <label for="tema">Sobre o que é o vídeo?</label>
+  <textarea id="tema" placeholder="Ex.: 5 curiosidades sobre o oceano profundo"></textarea>
+  <label for="estilo">Estilo visual das imagens</label>
+  <select id="estilo">
+    <option value="fotografia realista, alta definição, luz natural">Realista</option>
+    <option value="cinematográfico, dramático, alto contraste">Cinematográfico</option>
+    <option value="ilustração digital vibrante, cores fortes">Ilustração digital</option>
+    <option value="aquarela suave, artístico">Aquarela</option>
+    <option value="estilo cartoon, cores vivas">Cartoon</option>
+  </select>
+  <label for="numCenas">Número de cenas</label>
+  <input type="number" id="numCenas" value="6" min="3" max="12">
+  <button class="btn" id="btnGerarRoteiro">Gerar roteiro de cenas</button>
+  <div class="status" id="statusRoteiro"></div>
+</div>
+
+<!-- 3. CENAS / IMAGENS -->
+<div class="card oculto" id="cardCenas">
+  <h2><span class="num">3</span> Cenas e imagens</h2>
+  <label for="providerImg">Gerar imagens com</label>
+  <select id="providerImg">
+    <option value="flux">Flux (recomendado — mais realista)</option>
+    <option value="openai">OpenAI gpt-image-1 (alternativa)</option>
+  </select>
+  <button class="btn" id="btnGerarImagens">Gerar todas as imagens</button>
+  <div class="status" id="statusImagens"></div>
+  <div id="listaCenas" style="margin-top:12px"></div>
+  <div class="custo" id="custoImagens"></div>
+</div>
+
+<!-- 4. MÚSICA -->
+<div class="card oculto" id="cardMusica">
+  <h2><span class="num">4</span> Música</h2>
+  <label for="arquivoMusica">Anexe um arquivo de áudio seu</label>
+  <input type="file" id="arquivoMusica" accept="audio/*">
+  <div class="dica">
+    Use uma música que você tenha os direitos de usar (banco royalty-free, sua própria
+    gravação, trilha licenciada). O app <b>não</b> extrai áudio do Spotify — isso viola os
+    termos de uso do Spotify e não é tecnicamente possível de forma legal.
+  </div>
+  <audio id="previewAudio" controls style="width:100%; margin-top:10px; display:none"></audio>
+
+  <label for="duracaoTotal">Duração do vídeo (segundos)</label>
+  <input type="number" id="duracaoTotal" min="3" step="1">
+  <button class="btn btn-sec" id="btnDistribuir" style="margin-top:10px">Distribuir tempo igualmente entre as cenas</button>
+
+  <div id="listaDuracoes" style="margin-top:12px"></div>
+</div>
+
+<!-- 5. MONTAR VÍDEO -->
+<div class="card oculto" id="cardMontar">
+  <h2><span class="num">5</span> Montar vídeo</h2>
+  <button class="btn" id="btnMontar">Montar vídeo agora</button>
+  <div class="barra-progresso oculto" id="barraWrap"><div id="barraFill"></div></div>
+  <div class="status" id="statusMontar"></div>
+  <video id="resultadoVideo" class="oculto" controls></video>
+  <a id="linkDownload" class="btn oculto" download="serie-video.webm">Baixar vídeo (.webm)</a>
+</div>
+
+<script>
+// ---------- estado ----------
+const state = {
+  cenas: [],       // { prompt_imagem, legenda, imgSrc, tainted, provider }
+  audioFile: null,
+  audioDuration: 0,
+  duracoes: []      // segundos por cena
+};
+
+// ---------- utilidades ----------
+const $ = id => document.getElementById(id);
+function mostrarStatus(elId, msg, tipo){
+  const el = $(elId);
+  el.textContent = msg;
+  el.className = 'status ' + tipo;
+}
+function salvarConfigLocal(){
+  localStorage.setItem('sv_openai_key', $('openaiKey').value.trim());
+  localStorage.setItem('sv_bfl_key', $('bflKey').value.trim());
+  localStorage.setItem('sv_tema', $('tema').value);
+  localStorage.setItem('sv_estilo', $('estilo').value);
+  localStorage.setItem('sv_numCenas', $('numCenas').value);
+}
+function carregarConfigLocal(){
+  $('openaiKey').value = localStorage.getItem('sv_openai_key') || '';
+  $('bflKey').value = localStorage.getItem('sv_bfl_key') || '';
+  $('tema').value = localStorage.getItem('sv_tema') || '';
+  if (localStorage.getItem('sv_estilo')) $('estilo').value = localStorage.getItem('sv_estilo');
+  if (localStorage.getItem('sv_numCenas')) $('numCenas').value = localStorage.getItem('sv_numCenas');
+}
+carregarConfigLocal();
+
+// ---------- 1. chaves ----------
+$('btnSalvarChaves').addEventListener('click', () => {
+  salvarConfigLocal();
+  mostrarStatus('statusChaves', 'Chaves salvas neste aparelho.', 'ok');
+});
+
+$('btnTestarChaves').addEventListener('click', async () => {
+  const key = $('openaiKey').value.trim();
+  if (!key) { mostrarStatus('statusChaves', 'Cole a chave da OpenAI primeiro.', 'erro'); return; }
+  mostrarStatus('statusChaves', 'Testando...', 'info');
+  try {
+    const resp = await fetch('https://api.openai.com/v1/models', {
+      headers: { 'Authorization': 'Bearer ' + key }
+    });
+    if (resp.ok) {
+      mostrarStatus('statusChaves', 'Chave da OpenAI válida! (a chave da Flux é validada na primeira geração de imagem)', 'ok');
+    } else {
+      mostrarStatus('statusChaves', 'Chave da OpenAI inválida ou sem crédito (HTTP ' + resp.status + ').', 'erro');
+    }
+  } catch (e) {
+    mostrarStatus('statusChaves', 'Erro de rede ao testar: ' + e.message, 'erro');
+  }
+});
+
+// ---------- 2. gerar roteiro ----------
+$('btnGerarRoteiro').addEventListener('click', async () => {
+  const key = $('openaiKey').value.trim();
+  const tema = $('tema').value.trim();
+  const estilo = $('estilo').value;
+  const numCenas = parseInt($('numCenas').value, 10) || 6;
+
+  if (!key) { mostrarStatus('statusRoteiro', 'Cole e salve sua chave da OpenAI na seção 1.', 'erro'); return; }
+  if (!tema) { mostrarStatus('statusRoteiro', 'Escreva o tema do vídeo.', 'erro'); return; }
+
+  salvarConfigLocal();
+  mostrarStatus('statusRoteiro', 'Gerando roteiro...', 'info');
+  $('btnGerarRoteiro').disabled = true;
+
+  try {
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + key,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: 'Você é um roteirista de vídeos curtos verticais para redes sociais. Responda SOMENTE com um JSON válido no formato exato: {"titulo": "string", "cenas": [{"prompt_imagem": "string em inglês, descritivo, para gerador de imagem por IA", "legenda": "string curta em português, até 8 palavras"}]}. Não inclua texto fora do JSON.' },
+          { role: 'user', content: `Tema: ${tema}\nEstilo visual: ${estilo}\nNúmero de cenas: ${numCenas}\nCada cena deve ter um prompt de imagem visualmente distinto que ilustre uma parte do tema, incorporando o estilo visual pedido.` }
+        ]
+      })
+    });
+
+    if (!resp.ok) {
+      const txt = await resp.text();
+      throw new Error('HTTP ' + resp.status + ' — ' + txt.slice(0, 200));
+    }
+
+    const data = await resp.json();
+    const conteudo = JSON.parse(data.choices[0].message.content);
+    if (!conteudo.cenas || !conteudo.cenas.length) throw new Error('Resposta sem cenas.');
+
+    state.cenas = conteudo.cenas.map(c => ({
+      prompt_imagem: c.prompt_imagem || '',
+      legenda: c.legenda || '',
+      imgSrc: null,
+      tainted: false,
+      provider: null
+    }));
+
+    renderCenas();
+    $('cardCenas').classList.remove('oculto');
+    mostrarStatus('statusRoteiro', `Roteiro "${conteudo.titulo || tema}" gerado com ${state.cenas.length} cenas. Edite os textos abaixo se quiser antes de gerar as imagens.`, 'ok');
+  } catch (e) {
+    mostrarStatus('statusRoteiro', 'Erro ao gerar roteiro: ' + e.message, 'erro');
+  } finally {
+    $('btnGerarRoteiro').disabled = false;
+  }
+});
+
+// ---------- 3. cenas / imagens ----------
+function renderCenas(){
+  const lista = $('listaCenas');
+  lista.innerHTML = '';
+  state.cenas.forEach((cena, i) => {
+    const div = document.createElement('div');
+    div.className = 'cena';
+    div.innerHTML = `
+      <div class="cena-topo"><span>Cena ${i+1}</span>
+        <button class="btn btn-sec btn-sm" data-regerar="${i}">Gerar/regerar imagem</button>
+      </div>
+      <label>Prompt da imagem (em inglês)</label>
+      <textarea data-campo="prompt_imagem" data-idx="${i}">${cena.prompt_imagem}</textarea>
+      <label>Legenda na tela</label>
+      <input type="text" data-campo="legenda" data-idx="${i}" value="${cena.legenda.replace(/"/g,'&quot;')}">
+      <div class="cena-preview" id="preview-${i}">${cena.imgSrc ? `<img src="${cena.imgSrc}">` : 'sem imagem ainda'}</div>
+    `;
+    lista.appendChild(div);
+  });
+
+  lista.querySelectorAll('textarea[data-campo], input[data-campo]').forEach(el => {
+    el.addEventListener('change', () => {
+      const idx = parseInt(el.dataset.idx, 10);
+      state.cenas[idx][el.dataset.campo] = el.value;
+    });
+  });
+  lista.querySelectorAll('[data-regerar]').forEach(btn => {
+    btn.addEventListener('click', () => gerarImagemCena(parseInt(btn.dataset.regerar, 10)));
+  });
+}
+
+function atualizarCustoEstimado(){
+  const provider = $('providerImg').value;
+  const precoUnit = provider === 'flux' ? 0.04 : 0.07; // estimativa em USD por imagem
+  const total = (precoUnit * state.cenas.length).toFixed(2);
+  $('custoImagens').textContent = `Custo estimado: ~US$ ${total} (${state.cenas.length} imagens, ${provider === 'flux' ? 'Flux' : 'OpenAI'}). Confira o preço atual no site do provedor.`;
+}
+$('providerImg').addEventListener('change', atualizarCustoEstimado);
+
+async function gerarImagemOpenAI(prompt){
+  const key = $('openaiKey').value.trim();
+  if (!key) throw new Error('Cole a chave da OpenAI na seção 1.');
+  const resp = await fetch('https://api.openai.com/v1/images/generations', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'gpt-image-1', prompt, size: '1024x1536', n: 1 })
+  });
+  if (!resp.ok) throw new Error('OpenAI HTTP ' + resp.status + ' — ' + (await resp.text()).slice(0,200));
+  const data = await resp.json();
+  return { src: 'data:image/png;base64,' + data.data[0].b64_json, tainted: false };
+}
+
+async function gerarImagemFlux(prompt){
+  const key = $('bflKey').value.trim();
+  if (!key) throw new Error('Cole a chave da Flux/BFL na seção 1.');
+
+  const resp = await fetch('https://api.bfl.ai/v1/flux-pro-1.1', {
+    method: 'POST',
+    headers: { 'x-key': key, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt, width: 768, height: 1344, output_format: 'png' })
+  });
+  if (!resp.ok) throw new Error('Flux HTTP ' + resp.status + ' — ' + (await resp.text()).slice(0,200));
+  const { polling_url } = await resp.json();
+  if (!polling_url) throw new Error('Flux não retornou polling_url.');
+
+  let imageUrl = null;
+  for (let tentativa = 0; tentativa < 40; tentativa++) {
+    await new Promise(r => setTimeout(r, 1500));
+    const pollResp = await fetch(polling_url, { headers: { 'x-key': key } });
+    if (!pollResp.ok) continue;
+    const pollData = await pollResp.json();
+    if (pollData.status === 'Ready') { imageUrl = pollData.result?.sample; break; }
+    if (pollData.status && pollData.status.includes('Moderated')) throw new Error('Conteúdo bloqueado pela moderação da Flux — ajuste o prompt.');
+    if (pollData.status === 'Error') throw new Error('Flux retornou erro na geração.');
+  }
+  if (!imageUrl) throw new Error('Tempo esgotado esperando a imagem da Flux.');
+
+  // Baixa a imagem como blob para poder desenhar no canvas sem "sujar" o vídeo final.
+  // Se o servidor da Flux não liberar CORS, isso falha e marcamos a cena como tainted.
+  try {
+    const imgResp = await fetch(imageUrl, { mode: 'cors' });
+    const blob = await imgResp.blob();
+    return { src: URL.createObjectURL(blob), tainted: false };
+  } catch (e) {
+    return { src: imageUrl, tainted: true };
+  }
+}
+
+async function gerarImagemCena(idx){
+  const cena = state.cenas[idx];
+  const provider = $('providerImg').value;
+  const preview = $('preview-' + idx);
+  preview.textContent = 'gerando...';
+  try {
+    const resultado = provider === 'flux' ? await gerarImagemFlux(cena.prompt_imagem) : await gerarImagemOpenAI(cena.prompt_imagem);
+    cena.imgSrc = resultado.src;
+    cena.tainted = resultado.tainted;
+    cena.provider = provider;
+    preview.innerHTML = `<img src="${resultado.src}">`;
+    if (resultado.tainted) {
+      mostrarStatus('statusImagens', `Cena ${idx+1}: imagem da Flux gerada, mas o servidor não libera CORS — esta imagem não poderá ser usada na montagem do vídeo. Troque o provedor para OpenAI nesta cena, ou regere com OpenAI.`, 'erro');
+    }
+    verificarProntoParaMusica();
+  } catch (e) {
+    preview.textContent = 'erro';
+    mostrarStatus('statusImagens', `Cena ${idx+1}: ${e.message}`, 'erro');
+  }
+}
+
+$('btnGerarImagens').addEventListener('click', async () => {
+  if (!state.cenas.length) return;
+  $('btnGerarImagens').disabled = true;
+  atualizarCustoEstimado();
+  mostrarStatus('statusImagens', 'Gerando imagens, uma por vez...', 'info');
+  for (let i = 0; i < state.cenas.length; i++) {
+    mostrarStatus('statusImagens', `Gerando imagem ${i+1} de ${state.cenas.length}...`, 'info');
+    await gerarImagemCena(i);
+  }
+  mostrarStatus('statusImagens', 'Imagens geradas. Revise abaixo antes de continuar.', 'ok');
+  $('btnGerarImagens').disabled = false;
+  $('cardMusica').classList.remove('oculto');
+});
+
+// ---------- 4. música ----------
+function verificarProntoParaMusica(){
+  if (state.cenas.some(c => c.imgSrc)) $('cardMusica').classList.remove('oculto');
+}
+
+$('arquivoMusica').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  state.audioFile = file;
+  const url = URL.createObjectURL(file);
+  const audioEl = $('previewAudio');
+  audioEl.src = url;
+  audioEl.style.display = 'block';
+  audioEl.onloadedmetadata = () => {
+    state.audioDuration = audioEl.duration;
+    const totalDefault = Math.min(audioEl.duration, 60);
+    $('duracaoTotal').value = totalDefault.toFixed(0);
+    $('duracaoTotal').max = Math.floor(audioEl.duration);
+    distribuirDuracoes();
+    $('cardMontar').classList.remove('oculto');
+  };
+});
+
+function distribuirDuracoes(){
+  const total = parseFloat($('duracaoTotal').value) || 30;
+  const n = state.cenas.length || 1;
+  const porCena = total / n;
+  state.duracoes = new Array(n).fill(porCena);
+  renderDuracoes();
+}
+$('btnDistribuir').addEventListener('click', distribuirDuracoes);
+
+function renderDuracoes(){
+  const div = $('listaDuracoes');
+  div.innerHTML = '';
+  state.duracoes.forEach((d, i) => {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.style.marginBottom = '6px';
+    row.innerHTML = `
+      <label style="flex:0 0 70px; margin:0">Cena ${i+1}</label>
+      <input type="number" step="0.5" min="0.5" value="${d.toFixed(1)}" data-dur="${i}">
+      <span style="flex:0 0 30px; color:#7a7a9a; font-size:12px">seg</span>
+    `;
+    div.appendChild(row);
+  });
+  div.querySelectorAll('[data-dur]').forEach(inp => {
+    inp.addEventListener('change', () => {
+      state.duracoes[parseInt(inp.dataset.dur,10)] = parseFloat(inp.value) || 1;
+    });
+  });
+}
+
+// ---------- 5. montar vídeo ----------
+function desenharCover(ctx, img, cw, ch, zoom, panX, panY){
+  const imgRatio = img.width / img.height;
+  const canvasRatio = cw / ch;
+  let baseW, baseH;
+  if (imgRatio > canvasRatio) { baseH = ch; baseW = ch * imgRatio; }
+  else { baseW = cw; baseH = cw / imgRatio; }
+  const w = baseW * zoom;
+  const h = baseH * zoom;
+  const x = (cw - w) / 2 + panX;
+  const y = (ch - h) / 2 + panY;
+  ctx.drawImage(img, x, y, w, h);
+}
+
+function desenharLegenda(ctx, texto, cw, ch){
+  if (!texto) return;
+  const fontSize = 44;
+  ctx.font = `700 ${fontSize}px system-ui, sans-serif`;
+  ctx.textAlign = 'center';
+  const maxWidth = cw * 0.85;
+  const palavras = texto.split(' ');
+  const linhas = [];
+  let linhaAtual = '';
+  palavras.forEach(p => {
+    const teste = linhaAtual ? linhaAtual + ' ' + p : p;
+    if (ctx.measureText(teste).width > maxWidth && linhaAtual) {
+      linhas.push(linhaAtual);
+      linhaAtual = p;
+    } else {
+      linhaAtual = teste;
+    }
+  });
+  if (linhaAtual) linhas.push(linhaAtual);
+
+  const alturaBloco = linhas.length * (fontSize + 10) + 40;
+  const yBase = ch - alturaBloco;
+  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  ctx.fillRect(0, yBase, cw, alturaBloco);
+  ctx.fillStyle = '#ffffff';
+  linhas.forEach((linha, i) => {
+    ctx.fillText(linha, cw/2, yBase + 50 + i * (fontSize + 10));
+  });
+}
+
+async function carregarImagens(){
+  return Promise.all(state.cenas.map(cena => new Promise((resolve, reject) => {
+    const img = new Image();
+    if (!cena.tainted) img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Falha ao carregar imagem de uma cena.'));
+    img.src = cena.imgSrc;
+  })));
+}
+
+$('btnMontar').addEventListener('click', async () => {
+  if (state.cenas.some(c => !c.imgSrc)) { mostrarStatus('statusMontar', 'Gere as imagens de todas as cenas primeiro.', 'erro'); return; }
+  if (state.cenas.some(c => c.tainted)) { mostrarStatus('statusMontar', 'Existem imagens da Flux sem CORS liberado — regere essas cenas com OpenAI antes de montar o vídeo.', 'erro'); return; }
+  if (!state.audioFile) { mostrarStatus('statusMontar', 'Anexe uma música primeiro.', 'erro'); return; }
+
+  $('btnMontar').disabled = true;
+  $('barraWrap').classList.remove('oculto');
+  mostrarStatus('statusMontar', 'Preparando...', 'info');
+
+  try {
+    const imagens = await carregarImagens();
+    const totalDuracao = state.duracoes.reduce((a,b) => a+b, 0);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 1080;
+    canvas.height = 1920;
+    const ctx = canvas.getContext('2d');
+
+    const audioEl = $('previewAudio');
+    audioEl.currentTime = 0;
+    const audioStream = audioEl.captureStream ? audioEl.captureStream() : audioEl.mozCaptureStream();
+    const videoStream = canvas.captureStream(30);
+    const combinedStream = new MediaStream([...videoStream.getVideoTracks(), ...audioStream.getAudioTracks()]);
+
+    const chunks = [];
+    const recorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm;codecs=vp9,opus' });
+    recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+
+    const finished = new Promise(resolve => { recorder.onstop = resolve; });
+
+    recorder.start();
+    await audioEl.play();
+
+    const inicioAcumulado = [];
+    let acumulado = 0;
+    state.duracoes.forEach(d => { inicioAcumulado.push(acumulado); acumulado += d; });
+
+    function loop(){
+      const t = audioEl.currentTime;
+      $('barraFill').style.width = Math.min(100, (t / totalDuracao) * 100) + '%';
+
+      if (t >= totalDuracao || audioEl.ended) {
+        recorder.stop();
+        audioEl.pause();
+        return;
+      }
+
+      let idx = 0;
+      for (let i = 0; i < inicioAcumulado.length; i++) if (t >= inicioAcumulado[i]) idx = i;
+      const inicioCena = inicioAcumulado[idx];
+      const duracaoCena = state.duracoes[idx];
+      const progresso = Math.min(1, (t - inicioCena) / duracaoCena);
+
+      const zoom = 1 + 0.15 * progresso;
+      const direcao = idx % 2 === 0 ? 1 : -1;
+      const panX = direcao * 40 * progresso;
+      const panY = -20 * progresso;
+
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      desenharCover(ctx, imagens[idx], canvas.width, canvas.height, zoom, panX, panY);
+      desenharLegenda(ctx, state.cenas[idx].legenda, canvas.width, canvas.height);
+
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+
+    await finished;
+
+    const blob = new Blob(chunks, { type: 'video/webm' });
+    const url = URL.createObjectURL(blob);
+    const video = $('resultadoVideo');
+    video.src = url;
+    video.classList.remove('oculto');
+    const link = $('linkDownload');
+    link.href = url;
+    link.classList.remove('oculto');
+
+    mostrarStatus('statusMontar', 'Vídeo montado! Assista abaixo e baixe.', 'ok');
+  } catch (e) {
+    mostrarStatus('statusMontar', 'Erro ao montar o vídeo: ' + e.message, 'erro');
+  } finally {
+    $('btnMontar').disabled = false;
+    $('barraWrap').classList.add('oculto');
+  }
+});
+
+// ---------- service worker ----------
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
+}
+</script>
+</body>
+</html>
