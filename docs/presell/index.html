@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Criador de Presell</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7c3aed">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0d0d17;
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 14px 14px 60px;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .app-titulo {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #a78bfa;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .app-subtitulo {
+    text-align: center;
+    font-size: 11px;
+    color: #6b6b8a;
+    margin-bottom: 18px;
+  }
+
+  .card {
+    background: #16162a;
+    border: 1px solid #26264a;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .card h2 {
+    font-size: 14px;
+    color: #a78bfa;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card h2 .num {
+    background: #7c3aed;
+    color: #fff;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  label { display: block; font-size: 12px; color: #b0b0d0; margin: 10px 0 5px; }
+  label:first-child { margin-top: 0; }
+  .dica { font-size: 11px; color: #6b6b8a; margin: 4px 0 0; }
+
+  input[type="text"], input[type="password"], input[type="number"], input[type="url"], textarea, select {
+    width: 100%;
+    background: #0d0d17;
+    border: 1px solid #2c2c50;
+    color: #e0e0e0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: #7c3aed; }
+
+  input[type="file"] { font-size: 12px; color: #b0b0d0; }
+  input[type="color"] { width: 46px; height: 34px; padding: 2px; border: 1px solid #2c2c50; border-radius: 8px; background: #0d0d17; vertical-align: middle; }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    width: 100%;
+    background: #7c3aed;
+    color: #fff;
+    border: none;
+    padding: 13px 16px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 12px;
+  }
+  .btn:active { transform: scale(0.99); }
+  .btn:disabled { opacity: 0.5; }
+  .btn.sec { background: #26264a; color: #d0d0f0; }
+  .btn.ghost { background: transparent; border: 1px solid #2c2c50; color: #b0b0d0; }
+  .btn.mini { width: auto; padding: 8px 12px; font-size: 12px; margin-top: 0; }
+
+  .linha { display: flex; gap: 10px; }
+  .linha > * { flex: 1; }
+
+  .modelos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .modelo {
+    background: #0d0d17;
+    border: 2px solid #2c2c50;
+    border-radius: 10px;
+    padding: 12px;
+    cursor: pointer;
+    transition: border-color .15s;
+  }
+  .modelo.ativo { border-color: #7c3aed; background: #1a1533; }
+  .modelo .mt { font-size: 13px; font-weight: 700; color: #e0e0e0; margin-bottom: 4px; }
+  .modelo .md { font-size: 11px; color: #8a8ab0; line-height: 1.4; }
+
+  .status { font-size: 12px; margin-top: 10px; padding: 9px 11px; border-radius: 8px; display: none; }
+  .status.show { display: block; }
+  .status.info { background: #1a2540; color: #8ab4f8; }
+  .status.ok { background: #14331f; color: #7ee2a8; }
+  .status.err { background: #3a1620; color: #f8918a; }
+
+  .previewWrap { border: 1px solid #2c2c50; border-radius: 10px; overflow: hidden; background: #fff; margin-top: 12px; }
+  #previewFrame { width: 100%; height: 460px; border: 0; display: block; background: #fff; }
+
+  .linkbox {
+    display: none;
+    margin-top: 12px; padding: 12px;
+    background: #0d0d17; border: 1px solid #2c2c50; border-radius: 10px;
+    word-break: break-all; font-size: 13px; color: #7ee2a8;
+  }
+  .linkbox.show { display: block; }
+  .linkbox a { color: #a78bfa; }
+
+  .pagina-item {
+    display: flex; align-items: center; gap: 8px;
+    background: #0d0d17; border: 1px solid #2c2c50; border-radius: 8px;
+    padding: 10px; margin-top: 8px; font-size: 13px;
+  }
+  .pagina-item .nome { flex: 1; word-break: break-all; color: #d0d0f0; }
+  .pagina-item button { flex-shrink: 0; }
+
+  .toggle-ia { font-size: 12px; color: #8a8ab0; }
+  details.ia summary { cursor: pointer; color: #a78bfa; font-size: 13px; font-weight: 700; list-style: none; }
+  details.ia summary::-webkit-details-marker { display: none; }
+  details.ia summary::before { content: '▸ '; }
+  details.ia[open] summary::before { content: '▾ '; }
+</style>
+</head>
+<body>
+
+<div class="app-titulo">🎯 Criador de Presell</div>
+<div class="app-subtitulo">Monte páginas de pré-venda e publique num link grátis — sem domínio, sem hospedagem</div>
+
+<!-- 1. DADOS DA OFERTA -->
+<div class="card">
+  <h2><span class="num">1</span> Dados da oferta</h2>
+
+  <label>Nome do produto / oferta</label>
+  <input type="text" id="produto" placeholder="Ex.: Curso Emagrecer em 30 dias">
+
+  <label>Chamada principal (headline)</label>
+  <input type="text" id="headline" placeholder="Ex.: O método simples que já ajudou milhares a...">
+  <p class="dica">A primeira frase que a pessoa lê. Deve prometer o resultado.</p>
+
+  <label>Subtítulo (opcional)</label>
+  <input type="text" id="subheadline" placeholder="Ex.: Sem dietas malucas e sem passar fome">
+
+  <label>Benefícios (um por linha)</label>
+  <textarea id="beneficios" placeholder="Resultado já nas primeiras semanas&#10;Passo a passo simples de seguir&#10;Funciona mesmo na correria do dia a dia"></textarea>
+
+  <label>Depoimento / prova social (opcional)</label>
+  <textarea id="depoimento" placeholder="Ex.: Perdi 6kg em um mês seguindo o método. Nunca foi tão fácil!"></textarea>
+  <input type="text" id="autor" placeholder="Nome de quem falou (ex.: Ana, 34 anos)" style="margin-top:8px">
+
+  <div class="linha" style="margin-top:10px">
+    <div>
+      <label>Preço "de" (opcional)</label>
+      <input type="text" id="precoDe" placeholder="R$ 297">
+    </div>
+    <div>
+      <label>Preço "por"</label>
+      <input type="text" id="precoPor" placeholder="R$ 97">
+    </div>
+  </div>
+
+  <label>Limitações / pontos de atenção (um por linha, opcional)</label>
+  <textarea id="limitacoes" placeholder="Não é indicado pra quem busca resultado da noite pro dia&#10;Exige constância nas primeiras semanas"></textarea>
+  <p class="dica">Ser honesta sobre os limites aumenta a confiança e ajuda a página a passar na revisão dos anúncios (Google exige conteúdo original, não só propaganda).</p>
+
+  <label>Pra quem é / não é (opcional)</label>
+  <textarea id="paraQuem" placeholder="Indicado pra quem já tentou de tudo e quer algo simples de seguir. Não indicado pra quem busca solução mágica sem nenhum esforço."></textarea>
+
+  <label>Link de afiliado (para onde o botão leva)</label>
+  <input type="url" id="link" placeholder="https://... seu link da oferta">
+  <p class="dica">É o link que você recebe da plataforma (Hotmart, Monetizze, Amazon, etc.).</p>
+
+  <label>Programa de afiliado</label>
+  <select id="programaAfiliado">
+    <option value="">Outro / não especificar</option>
+    <option value="amazon">Amazon Associados</option>
+  </select>
+  <p class="dica">Se for Amazon, a declaração de afiliado exigida por eles ("Como associado da Amazon, eu recebo por compras qualificadas") entra automaticamente no rodapé da página.</p>
+
+  <label><input type="checkbox" id="linkPatrocinado" style="width:auto;vertical-align:middle"> Marcar como "link patrocinado"</label>
+  <p class="dica">O Google exige esse aviso perto do botão quando você usa a página em anúncios pagos (Google Ads). Pra tráfego orgânico/redes sociais não é obrigatório, mas não atrapalha deixar.</p>
+
+  <label>Texto do botão</label>
+  <input type="text" id="textoBotao" placeholder="QUERO APROVEITAR AGORA" value="QUERO APROVEITAR AGORA">
+
+  <label>Imagem do produto (opcional)</label>
+  <input type="file" id="imagem" accept="image/*">
+  <p class="dica">Fica embutida na página — não precisa hospedar em lugar nenhum.</p>
+
+  <div class="linha" style="margin-top:10px">
+    <div>
+      <label>Cor principal</label>
+      <input type="color" id="cor" value="#7c3aed">
+    </div>
+    <div>
+      <label><input type="checkbox" id="usarContador" style="width:auto;vertical-align:middle"> Contador de urgência</label>
+      <input type="number" id="minutos" value="15" min="1" max="120" placeholder="minutos">
+    </div>
+  </div>
+</div>
+
+<!-- 2. MODELO -->
+<div class="card">
+  <h2><span class="num">2</span> Modelo da página</h2>
+  <p class="dica" style="margin-bottom:10px">Cada modelo escreve o texto de um jeito. Você pode editar tudo depois.</p>
+  <div class="modelos" id="modelos">
+    <div class="modelo" data-modelo="advertorial">
+      <div class="mt">📰 Notícia / Advertorial</div>
+      <div class="md">Parece uma matéria de site. Gera curiosidade e credibilidade.</div>
+    </div>
+    <div class="modelo" data-modelo="historia">
+      <div class="mt">💬 História pessoal</div>
+      <div class="md">Um relato em primeira pessoa que cria conexão e emoção.</div>
+    </div>
+    <div class="modelo" data-modelo="review">
+      <div class="mt">⭐ Análise / Review</div>
+      <div class="md">Uma avaliação honesta do produto, com prós e resultado.</div>
+    </div>
+    <div class="modelo" data-modelo="alerta">
+      <div class="mt">⚠️ Alerta / Curiosidade</div>
+      <div class="md">Um aviso que prende a atenção e leva a pessoa a clicar.</div>
+    </div>
+    <div class="modelo" data-modelo="reviewhonesto">
+      <div class="mt">✅ Review honesto (Amazon/Ads)</div>
+      <div class="md">Mostra prós, limitações e pra quem é. Ideal pra Google Ads e Amazon.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. IA OPCIONAL -->
+<div class="card">
+  <h2><span class="num">3</span> Melhorar com IA <span style="font-size:11px;color:#6b6b8a;font-weight:400">(opcional)</span></h2>
+  <p class="dica" style="margin-bottom:8px">O app já monta o texto sozinho, de graça. Se quiser um texto mais elaborado, use uma chave da OpenAI.</p>
+  <details class="ia">
+    <summary>Configurar chave da OpenAI</summary>
+    <label style="margin-top:10px">Chave da API (fica só neste aparelho)</label>
+    <input type="password" id="openaiKey" placeholder="sk-...">
+    <button class="btn sec mini" style="margin-top:8px" onclick="salvarChave()">Salvar chave</button>
+    <p class="dica">Crie em platform.openai.com/api-keys. Custa centavos por página.</p>
+  </details>
+  <button class="btn ghost" id="btnIA" onclick="melhorarComIA()" style="margin-top:12px">✨ Reescrever o texto com IA</button>
+  <div class="status" id="statusIA"></div>
+</div>
+
+<!-- 4. PREVIEW -->
+<div class="card">
+  <h2><span class="num">4</span> Prévia da página</h2>
+  <button class="btn" onclick="atualizarPreview()">👁️ Gerar / atualizar prévia</button>
+  <div class="previewWrap"><iframe id="previewFrame" title="Prévia da presell"></iframe></div>
+</div>
+
+<!-- 5. PUBLICAR -->
+<div class="card">
+  <h2><span class="num">5</span> Publicar</h2>
+
+  <label>Endereço da página (só letras, números e hífen)</label>
+  <input type="text" id="slug" placeholder="minha-oferta">
+  <p class="dica">Vira o final do link. Deixe vazio pra gerar automático do nome do produto.</p>
+
+  <button class="btn" id="btnPublicar" onclick="publicar()">🚀 Publicar no meu link grátis</button>
+  <button class="btn sec" onclick="baixarHTML()">⬇️ Baixar HTML (sem token)</button>
+  <button class="btn ghost" onclick="configurarNuvem()">⚙️ Configurar token do GitHub</button>
+
+  <div class="status" id="statusPub"></div>
+  <div class="linkbox" id="linkbox"></div>
+</div>
+
+<!-- 6. MINHAS PÁGINAS -->
+<div class="card">
+  <h2><span class="num">6</span> Minhas páginas</h2>
+  <button class="btn sec" onclick="listarPaginas()">🔄 Atualizar lista</button>
+  <div id="listaPaginas"></div>
+  <div class="status" id="statusLista"></div>
+</div>
+
+<script>
+// ================== CONFIG ==================
+// App de presell 100% no navegador. Publica as páginas no GitHub Pages deste
+// mesmo repositório — por isso o link final é grátis (sem domínio nem hospedagem).
+const REPO = 'adaraqueldias-byte/controle-post';
+const PASTA_PAGINAS = 'docs/presell/paginas';                 // onde o arquivo é gravado no repo
+const BASE_PUBLICA = 'https://adaraqueldias-byte.github.io/controle-post/presell/paginas'; // link no ar
+
+const $ = id => document.getElementById(id);
+let modeloAtivo = 'advertorial';
+let imagemDataURI = '';
+let copiaIA = null; // quando a IA reescreve, guardamos aqui pra usar no lugar do texto automático
+
+// ================== ESTADO / CAMPOS ==================
+function coletar() {
+  return {
+    produto: $('produto').value.trim(),
+    headline: $('headline').value.trim(),
+    subheadline: $('subheadline').value.trim(),
+    beneficios: $('beneficios').value.split('\n').map(s => s.trim()).filter(Boolean),
+    limitacoes: $('limitacoes').value.split('\n').map(s => s.trim()).filter(Boolean),
+    paraQuem: $('paraQuem').value.trim(),
+    depoimento: $('depoimento').value.trim(),
+    autor: $('autor').value.trim(),
+    precoDe: $('precoDe').value.trim(),
+    precoPor: $('precoPor').value.trim(),
+    link: $('link').value.trim(),
+    programaAfiliado: $('programaAfiliado').value,
+    linkPatrocinado: $('linkPatrocinado').checked,
+    textoBotao: $('textoBotao').value.trim() || 'QUERO APROVEITAR',
+    cor: $('cor').value,
+    usarContador: $('usarContador').checked,
+    minutos: parseInt($('minutos').value) || 15,
+    imagem: imagemDataURI,
+    modelo: modeloAtivo
+  };
+}
+
+// Seleção de modelo
+document.querySelectorAll('.modelo').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.modelo').forEach(m => m.classList.remove('ativo'));
+    el.classList.add('ativo');
+    modeloAtivo = el.dataset.modelo;
+    copiaIA = null; // trocou de modelo, descarta reescrita da IA
+  });
+});
+document.querySelector('.modelo').classList.add('ativo');
+
+// Imagem -> data URI embutido
+$('imagem').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (!f) { imagemDataURI = ''; return; }
+  const r = new FileReader();
+  r.onload = () => { imagemDataURI = r.result; };
+  r.readAsDataURL(f);
+});
+
+// Slug automático a partir do nome do produto
+$('produto').addEventListener('blur', () => {
+  if (!$('slug').value.trim() && $('produto').value.trim()) {
+    $('slug').value = gerarSlug($('produto').value);
+  }
+});
+
+function gerarSlug(txt) {
+  return txt.toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')  // tira acentos
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 50) || 'presell';
+}
+
+function esc(s) {
+  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function mostrar(id, msg, tipo) {
+  const el = $(id);
+  el.textContent = msg;
+  el.className = 'status show ' + tipo;
+}
+
+// ================== MODELOS DE COPY (offline) ==================
+// Cada modelo devolve os parágrafos do corpo do texto a partir dos dados.
+function gerarCorpo(d) {
+  if (copiaIA) return copiaIA; // se a IA reescreveu, usa o texto dela
+
+  const prod = d.produto || 'este método';
+  const prom = d.headline || 'um resultado real';
+  const p = [];
+
+  if (d.modelo === 'advertorial') {
+    p.push(`Nos últimos meses, um assunto vem ganhando cada vez mais atenção: <strong>${esc(prod)}</strong>. E não é por acaso.`);
+    p.push(`Muita gente que buscava ${esc(prom.toLowerCase())} finalmente encontrou um caminho que faz sentido — simples, direto e sem complicação.`);
+    p.push(`A seguir você entende por que tanta gente está falando disso e como aproveitar enquanto ainda dá tempo.`);
+  } else if (d.modelo === 'historia') {
+    p.push(`Eu preciso te contar uma coisa. Durante muito tempo eu tentei de tudo e nada dava certo — até conhecer <strong>${esc(prod)}</strong>.`);
+    p.push(`No começo eu duvidei, confesso. Mas resolvi dar uma chance. E foi aí que tudo mudou: ${esc(prom.toLowerCase())} deixou de ser promessa e virou realidade pra mim.`);
+    p.push(`Se você também está cansada de tentar sem resultado, talvez essa seja a virada que você procura.`);
+  } else if (d.modelo === 'review') {
+    p.push(`Testei <strong>${esc(prod)}</strong> a fundo pra te dar uma opinião honesta — e aqui está o que encontrei.`);
+    p.push(`A proposta é clara: ${esc(prom.toLowerCase())}. O ponto forte é ser fácil de seguir, mesmo pra quem nunca tentou antes.`);
+    p.push(`No fim das contas, vale a pena? Pra quem quer resultado sem enrolação, a resposta é sim. Veja abaixo.`);
+  } else if (d.modelo === 'alerta') {
+    p.push(`⚠️ Atenção: se você quer ${esc(prom.toLowerCase())}, precisa ler isto antes de gastar seu tempo com o que não funciona.`);
+    p.push(`A maioria das pessoas erra por seguir métodos complicados demais. <strong>${esc(prod)}</strong> resolve isso de um jeito simples.`);
+    p.push(`Mas essa condição pode sair do ar a qualquer momento. Confira agora enquanto ainda está disponível.`);
+  } else { // reviewhonesto
+    p.push(`Antes de indicar qualquer coisa, prefiro ser transparente: avaliei <strong>${esc(prod)}</strong> com calma pra te dar uma visão real, sem exagero.`);
+    p.push(`A proposta é ${esc(prom.toLowerCase())}. Dentro do que me propus a avaliar, ela se sustenta — mas nenhum produto é perfeito pra todo mundo, e é sobre isso que quero falar abaixo, antes de você decidir.`);
+  }
+  return p;
+}
+
+// ================== GERAÇÃO DA PÁGINA (HTML autocontido) ==================
+function gerarPaginaHTML(d) {
+  const cor = d.cor || '#7c3aed';
+  const corpo = gerarCorpo(d).map(par => `<p>${par}</p>`).join('\n');
+
+  const beneficios = d.beneficios.length
+    ? `<ul class="benef">${d.beneficios.map(b => `<li>${esc(b)}</li>`).join('')}</ul>`
+    : '';
+
+  const limitacoesBloco = d.limitacoes.length
+    ? `<div class="limitacoes"><h3>Pontos de atenção</h3><ul class="lim">${d.limitacoes.map(l => `<li>${esc(l)}</li>`).join('')}</ul></div>`
+    : '';
+
+  const paraQuemBloco = d.paraQuem
+    ? `<div class="paraquem"><h3>Pra quem é</h3><p>${esc(d.paraQuem)}</p></div>`
+    : '';
+
+  const patrocinadoTag = d.linkPatrocinado ? `<span class="patrocinado">Link patrocinado</span>` : '';
+
+  const disclosure = d.programaAfiliado === 'amazon'
+    ? 'Como associado da Amazon, eu recebo por compras qualificadas.'
+    : 'Este site pode receber comissão por compras feitas através dos links.';
+
+  const imgHero = d.imagem
+    ? `<img class="hero-img" src="${d.imagem}" alt="${esc(d.produto)}">`
+    : '';
+
+  const precoBloco = d.precoPor
+    ? `<div class="preco">${d.precoDe ? `<span class="de">${esc(d.precoDe)}</span>` : ''}<span class="por">${esc(d.precoPor)}</span></div>`
+    : '';
+
+  const depo = d.depoimento
+    ? `<div class="depo"><p>"${esc(d.depoimento)}"</p>${d.autor ? `<span>— ${esc(d.autor)}</span>` : ''}</div>`
+    : '';
+
+  const contador = d.usarContador
+    ? `<div class="contador">⏳ Esta oferta expira em <b id="tmr">--:--</b></div>`
+    : '';
+
+  const scriptContador = d.usarContador ? `
+    <script>
+      (function(){
+        var fim = Date.now() + ${d.minutos} * 60000;
+        var el = document.getElementById('tmr');
+        function t(){
+          var s = Math.max(0, Math.floor((fim - Date.now())/1000));
+          var m = String(Math.floor(s/60)).padStart(2,'0');
+          var ss = String(s%60).padStart(2,'0');
+          if(el) el.textContent = m + ':' + ss;
+        }
+        t(); setInterval(t, 1000);
+      })();
+    <\/script>` : '';
+
+  const link = d.link || '#';
+  const btn = esc(d.textoBotao);
+
+  return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${esc(d.produto || 'Oferta especial')}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#f4f5f7;color:#1a1a2e;line-height:1.6}
+  .wrap{max-width:640px;margin:0 auto;background:#fff;min-height:100vh;padding:22px 20px 110px}
+  .tag{display:inline-block;background:${cor}1a;color:${cor};font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+  h1{font-size:26px;line-height:1.25;margin-bottom:10px}
+  .sub{font-size:16px;color:#555;margin-bottom:18px}
+  .hero-img{width:100%;border-radius:14px;margin:6px 0 18px;display:block}
+  p{margin-bottom:14px;font-size:16px;color:#2a2a3a}
+  .benef{list-style:none;margin:6px 0 20px}
+  .benef li{position:relative;padding:9px 0 9px 32px;font-size:16px;border-bottom:1px solid #eee}
+  .benef li::before{content:'✓';position:absolute;left:0;top:9px;width:22px;height:22px;background:${cor};color:#fff;border-radius:50%;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .limitacoes{margin:20px 0}
+  .limitacoes h3{font-size:15px;margin-bottom:8px;color:#444}
+  .lim{list-style:none}
+  .lim li{position:relative;padding:8px 0 8px 30px;font-size:15px;color:#555;border-bottom:1px solid #f0f0f0}
+  .lim li::before{content:'–';position:absolute;left:2px;top:8px;color:#999;font-weight:700}
+  .paraquem{background:#f4f5f7;border-radius:10px;padding:14px 16px;margin:18px 0}
+  .paraquem h3{font-size:14px;margin-bottom:6px;color:#333}
+  .paraquem p{font-size:15px;color:#444;margin-bottom:0}
+  .patrocinado{display:block;text-align:center;font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.5px;margin:0 0 8px}
+  .disclosure{font-size:12px;color:#999;text-align:center;margin-bottom:4px}
+  .depo{background:#f4f5f7;border-left:4px solid ${cor};border-radius:10px;padding:16px;margin:18px 0}
+  .depo p{font-style:italic;margin-bottom:6px}
+  .depo span{font-size:13px;font-weight:700;color:#555}
+  .preco{text-align:center;margin:22px 0}
+  .preco .de{display:block;color:#999;text-decoration:line-through;font-size:16px}
+  .preco .por{display:block;color:${cor};font-size:38px;font-weight:800}
+  .contador{text-align:center;background:#fff5e6;color:#b45309;border:1px solid #fcd9a0;border-radius:10px;padding:11px;font-size:14px;margin:18px 0}
+  .cta{display:block;background:${cor};color:#fff;text-align:center;text-decoration:none;font-size:19px;font-weight:800;padding:18px;border-radius:12px;margin:22px 0;box-shadow:0 6px 20px ${cor}55;animation:pulse 1.8s infinite}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+  .barra{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e5e5ef;padding:12px 16px;max-width:640px;margin:0 auto}
+  .barra a{display:block;background:${cor};color:#fff;text-align:center;text-decoration:none;font-size:17px;font-weight:800;padding:15px;border-radius:12px}
+  .rodape{text-align:center;font-size:11px;color:#aaa;margin-top:26px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    ${d.produto ? `<span class="tag">${esc(d.produto)}</span>` : ''}
+    <h1>${esc(d.headline || 'Uma oportunidade que você não pode perder')}</h1>
+    ${d.subheadline ? `<p class="sub">${esc(d.subheadline)}</p>` : ''}
+    ${imgHero}
+    ${corpo}
+    ${beneficios}
+    ${limitacoesBloco}
+    ${paraQuemBloco}
+    ${depo}
+    ${precoBloco}
+    ${contador}
+    ${patrocinadoTag}
+    <a class="cta" href="${esc(link)}" target="_blank" rel="noopener">${btn} ›</a>
+    <div class="rodape">
+      <p class="disclosure">${disclosure}</p>
+      <p>Resultados podem variar de pessoa para pessoa.</p>
+    </div>
+  </div>
+  <div class="barra">${patrocinadoTag ? `<span class="patrocinado" style="margin-bottom:4px">Link patrocinado</span>` : ''}<a href="${esc(link)}" target="_blank" rel="noopener">${btn} ›</a></div>
+  ${scriptContador}
+</body>
+</html>`;
+}
+
+// ================== PREVIEW ==================
+function atualizarPreview() {
+  const d = coletar();
+  const html = gerarPaginaHTML(d);
+  $('previewFrame').srcdoc = html;
+}
+
+// ================== IA OPCIONAL (OpenAI) ==================
+function pegarChave() { return localStorage.getItem('presell_openai_key') || ''; }
+function salvarChave() {
+  const k = $('openaiKey').value.trim();
+  if (!k) { alert('Cole a chave antes de salvar.'); return; }
+  localStorage.setItem('presell_openai_key', k);
+  alert('✅ Chave salva neste aparelho.');
+}
+window.addEventListener('load', () => { $('openaiKey').value = pegarChave(); });
+
+async function melhorarComIA() {
+  const key = pegarChave();
+  if (!key) { mostrar('statusIA', 'Configure sua chave da OpenAI acima primeiro.', 'err'); return; }
+  const d = coletar();
+  if (!d.produto && !d.headline) { mostrar('statusIA', 'Preencha ao menos o produto e a chamada.', 'err'); return; }
+
+  $('btnIA').disabled = true;
+  mostrar('statusIA', 'Reescrevendo o texto com IA...', 'info');
+  try {
+    const nomes = { advertorial:'matéria de site (advertorial)', historia:'história pessoal em primeira pessoa', review:'análise/review honesta', alerta:'alerta de curiosidade' };
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: 'Você é copywriter de páginas de pré-venda (presell) para marketing de afiliados no Brasil. Escreva em português, persuasivo, honesto e sem promessas ilegais. Responda SOMENTE com JSON no formato: {"paragrafos": ["string", "string", "string"]} com 3 a 4 parágrafos curtos em HTML simples (pode usar <strong>).' },
+          { role: 'user', content: `Produto: ${d.produto}\nPromessa/headline: ${d.headline}\nBenefícios: ${d.beneficios.join('; ')}\nEstilo do texto: ${nomes[d.modelo]}\nEscreva o corpo da presell nesse estilo, terminando puxando a pessoa para o botão de ação.` }
+        ]
+      })
+    });
+    if (!resp.ok) { const t = await resp.text(); throw new Error('HTTP ' + resp.status + ' — ' + t.slice(0,160)); }
+    const data = await resp.json();
+    const j = JSON.parse(data.choices[0].message.content);
+    if (!j.paragrafos || !j.paragrafos.length) throw new Error('Resposta vazia.');
+    copiaIA = j.paragrafos;
+    mostrar('statusIA', '✅ Texto reescrito! Clique em "Gerar / atualizar prévia".', 'ok');
+    atualizarPreview();
+  } catch (e) {
+    mostrar('statusIA', 'Não consegui usar a IA: ' + e.message, 'err');
+  } finally {
+    $('btnIA').disabled = false;
+  }
+}
+
+// ================== TOKEN / NUVEM (GitHub) ==================
+// Mesmo mecanismo do app principal: guarda o token só neste aparelho.
+function pegarToken() { return localStorage.getItem('gh_token') || ''; }
+function configurarNuvem() {
+  const atual = pegarToken();
+  const msg = atual
+    ? 'Já existe um token. Cole um novo para trocar, ou deixe vazio e toque OK para manter:'
+    : 'Cole o seu token do GitHub (começa com github_pat_). Precisa de permissão Contents: Read and write. Fica guardado só neste aparelho:';
+  const t = prompt(msg, '');
+  if (t === null) return;
+  if (t.trim() === '') { alert('Token mantido.'); return; }
+  localStorage.setItem('gh_token', t.trim());
+  alert('✅ Token salvo! Agora você pode publicar no seu link grátis.');
+}
+
+// ================== PUBLICAR ==================
+async function publicar() {
+  const token = pegarToken();
+  if (!token) { mostrar('statusPub', 'Primeiro configure o token do GitHub (botão abaixo).', 'err'); return; }
+
+  const d = coletar();
+  if (!d.link) { mostrar('statusPub', 'Coloque o link de afiliado antes de publicar.', 'err'); return; }
+
+  let slug = gerarSlug($('slug').value.trim() || d.produto || 'presell');
+  $('slug').value = slug;
+  const caminho = PASTA_PAGINAS + '/' + slug + '.html';
+  const urlPublica = BASE_PUBLICA + '/' + slug + '.html';
+
+  $('btnPublicar').disabled = true;
+  mostrar('statusPub', 'Publicando...', 'info');
+  try {
+    const html = gerarPaginaHTML(d);
+    const conteudo = btoa(unescape(encodeURIComponent(html)));
+    const urlApi = 'https://api.github.com/repos/' + REPO + '/contents/' + caminho;
+
+    // Pega o SHA se a página já existir (para atualizar em vez de duplicar)
+    let sha = null;
+    const r = await fetch(urlApi, { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json' } });
+    if (r.status === 200) { const j = await r.json(); sha = j.sha; }
+
+    const corpo = { message: 'presell: ' + slug, content: conteudo };
+    if (sha) corpo.sha = sha;
+
+    const put = await fetch(urlApi, {
+      method: 'PUT',
+      headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(corpo)
+    });
+
+    if (put.ok) {
+      mostrar('statusPub', '✅ Publicado! O link fica no ar em 1–2 minutos.', 'ok');
+      const lb = $('linkbox');
+      lb.className = 'linkbox show';
+      lb.innerHTML = `Seu link:<br><a href="${urlPublica}" target="_blank">${urlPublica}</a>` +
+        `<br><button class="btn sec mini" style="margin-top:10px" onclick="copiar('${urlPublica}')">📋 Copiar link</button>`;
+    } else {
+      const err = await put.json();
+      mostrar('statusPub', 'Não consegui publicar. Verifique o token (Contents: Read and write). ' + (err.message || put.status), 'err');
+    }
+  } catch (e) {
+    mostrar('statusPub', 'Erro ao publicar: ' + e.message, 'err');
+  } finally {
+    $('btnPublicar').disabled = false;
+  }
+}
+
+function copiar(txt) {
+  navigator.clipboard.writeText(txt).then(() => alert('Link copiado!'), () => prompt('Copie o link:', txt));
+}
+
+// ================== BAIXAR HTML ==================
+function baixarHTML() {
+  const d = coletar();
+  const html = gerarPaginaHTML(d);
+  const slug = gerarSlug($('slug').value.trim() || d.produto || 'presell');
+  const blob = new Blob([html], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = slug + '.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ================== MINHAS PÁGINAS ==================
+async function listarPaginas() {
+  const token = pegarToken();
+  const lista = $('listaPaginas');
+  lista.innerHTML = '';
+  if (!token) { mostrar('statusLista', 'Configure o token para ver suas páginas publicadas.', 'err'); return; }
+  mostrar('statusLista', 'Carregando...', 'info');
+  try {
+    const url = 'https://api.github.com/repos/' + REPO + '/contents/' + PASTA_PAGINAS + '?t=' + Date.now();
+    const r = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json' } });
+    if (r.status === 404) { mostrar('statusLista', 'Nenhuma página publicada ainda.', 'info'); return; }
+    if (!r.ok) { mostrar('statusLista', 'Não consegui carregar a lista.', 'err'); return; }
+    const arr = await r.json();
+    const paginas = arr.filter(f => f.type === 'file' && f.name.endsWith('.html'));
+    if (!paginas.length) { mostrar('statusLista', 'Nenhuma página publicada ainda.', 'info'); return; }
+    $('statusLista').className = 'status';
+    paginas.forEach(f => {
+      const urlPublica = BASE_PUBLICA + '/' + f.name;
+      const div = document.createElement('div');
+      div.className = 'pagina-item';
+      div.innerHTML = `<span class="nome">${f.name}</span>
+        <button class="btn sec mini" onclick="window.open('${urlPublica}','_blank')">Abrir</button>
+        <button class="btn ghost mini" onclick="copiar('${urlPublica}')">Copiar</button>
+        <button class="btn ghost mini" onclick="excluirPagina('${f.name}','${f.sha}')">🗑️</button>`;
+      lista.appendChild(div);
+    });
+  } catch (e) {
+    mostrar('statusLista', 'Erro: ' + e.message, 'err');
+  }
+}
+
+async function excluirPagina(nome, sha) {
+  if (!confirm('Excluir a página "' + nome + '"? O link vai sair do ar.')) return;
+  const token = pegarToken();
+  try {
+    const url = 'https://api.github.com/repos/' + REPO + '/contents/' + PASTA_PAGINAS + '/' + nome;
+    const del = await fetch(url, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: 'remove presell ' + nome, sha: sha })
+    });
+    if (del.ok) { listarPaginas(); }
+    else { const e = await del.json(); alert('Não consegui excluir: ' + (e.message || del.status)); }
+  } catch (e) { alert('Erro ao excluir: ' + e.message); }
+}
+
+// ================== SERVICE WORKER ==================
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
