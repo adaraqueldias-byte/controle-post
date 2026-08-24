@@ -18,8 +18,20 @@ ficam hospedadas de graça no **GitHub Pages** deste próprio repositório.
    depoimento, o preço e principalmente o **link de afiliado** (o botão leva pra lá).
    A imagem, se você anexar, fica embutida na página — não precisa hospedar em lugar
    nenhum.
-3. **Seção 2 — Modelo:** escolha o estilo do texto (notícia, história, review ou alerta).
-   O app escreve o texto sozinho, de graça.
+   - **Limitações e "pra quem é":** preencha também os pontos de atenção do produto e
+     pra quem ele é/não é indicado. Uma presell honesta (com prós **e** contras)
+     converte melhor e tem mais chance de passar na revisão dos anúncios pagos —
+     o Google reprova página que é só propaganda sem conteúdo real.
+   - **Programa de afiliado:** se for um link da Amazon, selecione "Amazon Associados"
+     — a página já inclui a declaração obrigatória deles ("Como associado da Amazon,
+     eu recebo por compras qualificadas"). Pra outros programas, entra uma declaração
+     genérica de comissão.
+   - **"Link patrocinado":** marque essa opção se for usar a página em **anúncios
+     pagos** (Google Ads exige esse aviso perto do botão). Pra tráfego orgânico/redes
+     sociais não é obrigatório.
+3. **Seção 2 — Modelo:** escolha o estilo do texto (notícia, história, review, alerta
+   ou **review honesto** — este último é o mais indicado pra Amazon e Google Ads, pois
+   já entra no tom de avaliação equilibrada). O app escreve o texto sozinho, de graça.
 4. **Seção 3 — IA (opcional):** se quiser um texto mais elaborado, cole uma chave da
    OpenAI e clique em "Reescrever com IA". Sem chave, o app funciona normalmente.
 5. **Seção 4 — Prévia:** clique em "Gerar / atualizar prévia" pra ver a página pronta.

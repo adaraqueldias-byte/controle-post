@@ -188,9 +188,26 @@
     </div>
   </div>
 
+  <label>Limitações / pontos de atenção (um por linha, opcional)</label>
+  <textarea id="limitacoes" placeholder="Não é indicado pra quem busca resultado da noite pro dia&#10;Exige constância nas primeiras semanas"></textarea>
+  <p class="dica">Ser honesta sobre os limites aumenta a confiança e ajuda a página a passar na revisão dos anúncios (Google exige conteúdo original, não só propaganda).</p>
+
+  <label>Pra quem é / não é (opcional)</label>
+  <textarea id="paraQuem" placeholder="Indicado pra quem já tentou de tudo e quer algo simples de seguir. Não indicado pra quem busca solução mágica sem nenhum esforço."></textarea>
+
   <label>Link de afiliado (para onde o botão leva)</label>
   <input type="url" id="link" placeholder="https://... seu link da oferta">
-  <p class="dica">É o link que você recebe da plataforma (Hotmart, Monetizze, etc.).</p>
+  <p class="dica">É o link que você recebe da plataforma (Hotmart, Monetizze, Amazon, etc.).</p>
+
+  <label>Programa de afiliado</label>
+  <select id="programaAfiliado">
+    <option value="">Outro / não especificar</option>
+    <option value="amazon">Amazon Associados</option>
+  </select>
+  <p class="dica">Se for Amazon, a declaração de afiliado exigida por eles ("Como associado da Amazon, eu recebo por compras qualificadas") entra automaticamente no rodapé da página.</p>
+
+  <label><input type="checkbox" id="linkPatrocinado" style="width:auto;vertical-align:middle"> Marcar como "link patrocinado"</label>
+  <p class="dica">O Google exige esse aviso perto do botão quando você usa a página em anúncios pagos (Google Ads). Pra tráfego orgânico/redes sociais não é obrigatório, mas não atrapalha deixar.</p>
 
   <label>Texto do botão</label>
   <input type="text" id="textoBotao" placeholder="QUERO APROVEITAR AGORA" value="QUERO APROVEITAR AGORA">
@@ -231,6 +248,10 @@
     <div class="modelo" data-modelo="alerta">
       <div class="mt">⚠️ Alerta / Curiosidade</div>
       <div class="md">Um aviso que prende a atenção e leva a pessoa a clicar.</div>
+    </div>
+    <div class="modelo" data-modelo="reviewhonesto">
+      <div class="mt">✅ Review honesto (Amazon/Ads)</div>
+      <div class="md">Mostra prós, limitações e pra quem é. Ideal pra Google Ads e Amazon.</div>
     </div>
   </div>
 </div>
@@ -301,11 +322,15 @@ function coletar() {
     headline: $('headline').value.trim(),
     subheadline: $('subheadline').value.trim(),
     beneficios: $('beneficios').value.split('\n').map(s => s.trim()).filter(Boolean),
+    limitacoes: $('limitacoes').value.split('\n').map(s => s.trim()).filter(Boolean),
+    paraQuem: $('paraQuem').value.trim(),
     depoimento: $('depoimento').value.trim(),
     autor: $('autor').value.trim(),
     precoDe: $('precoDe').value.trim(),
     precoPor: $('precoPor').value.trim(),
     link: $('link').value.trim(),
+    programaAfiliado: $('programaAfiliado').value,
+    linkPatrocinado: $('linkPatrocinado').checked,
     textoBotao: $('textoBotao').value.trim() || 'QUERO APROVEITAR',
     cor: $('cor').value,
     usarContador: $('usarContador').checked,
@@ -381,10 +406,13 @@ function gerarCorpo(d) {
     p.push(`Testei <strong>${esc(prod)}</strong> a fundo pra te dar uma opinião honesta — e aqui está o que encontrei.`);
     p.push(`A proposta é clara: ${esc(prom.toLowerCase())}. O ponto forte é ser fácil de seguir, mesmo pra quem nunca tentou antes.`);
     p.push(`No fim das contas, vale a pena? Pra quem quer resultado sem enrolação, a resposta é sim. Veja abaixo.`);
-  } else { // alerta
+  } else if (d.modelo === 'alerta') {
     p.push(`⚠️ Atenção: se você quer ${esc(prom.toLowerCase())}, precisa ler isto antes de gastar seu tempo com o que não funciona.`);
     p.push(`A maioria das pessoas erra por seguir métodos complicados demais. <strong>${esc(prod)}</strong> resolve isso de um jeito simples.`);
     p.push(`Mas essa condição pode sair do ar a qualquer momento. Confira agora enquanto ainda está disponível.`);
+  } else { // reviewhonesto
+    p.push(`Antes de indicar qualquer coisa, prefiro ser transparente: avaliei <strong>${esc(prod)}</strong> com calma pra te dar uma visão real, sem exagero.`);
+    p.push(`A proposta é ${esc(prom.toLowerCase())}. Dentro do que me propus a avaliar, ela se sustenta — mas nenhum produto é perfeito pra todo mundo, e é sobre isso que quero falar abaixo, antes de você decidir.`);
   }
   return p;
 }
@@ -397,6 +425,20 @@ function gerarPaginaHTML(d) {
   const beneficios = d.beneficios.length
     ? `<ul class="benef">${d.beneficios.map(b => `<li>${esc(b)}</li>`).join('')}</ul>`
     : '';
+
+  const limitacoesBloco = d.limitacoes.length
+    ? `<div class="limitacoes"><h3>Pontos de atenção</h3><ul class="lim">${d.limitacoes.map(l => `<li>${esc(l)}</li>`).join('')}</ul></div>`
+    : '';
+
+  const paraQuemBloco = d.paraQuem
+    ? `<div class="paraquem"><h3>Pra quem é</h3><p>${esc(d.paraQuem)}</p></div>`
+    : '';
+
+  const patrocinadoTag = d.linkPatrocinado ? `<span class="patrocinado">Link patrocinado</span>` : '';
+
+  const disclosure = d.programaAfiliado === 'amazon'
+    ? 'Como associado da Amazon, eu recebo por compras qualificadas.'
+    : 'Este site pode receber comissão por compras feitas através dos links.';
 
   const imgHero = d.imagem
     ? `<img class="hero-img" src="${d.imagem}" alt="${esc(d.produto)}">`
@@ -450,6 +492,16 @@ function gerarPaginaHTML(d) {
   .benef{list-style:none;margin:6px 0 20px}
   .benef li{position:relative;padding:9px 0 9px 32px;font-size:16px;border-bottom:1px solid #eee}
   .benef li::before{content:'✓';position:absolute;left:0;top:9px;width:22px;height:22px;background:${cor};color:#fff;border-radius:50%;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .limitacoes{margin:20px 0}
+  .limitacoes h3{font-size:15px;margin-bottom:8px;color:#444}
+  .lim{list-style:none}
+  .lim li{position:relative;padding:8px 0 8px 30px;font-size:15px;color:#555;border-bottom:1px solid #f0f0f0}
+  .lim li::before{content:'–';position:absolute;left:2px;top:8px;color:#999;font-weight:700}
+  .paraquem{background:#f4f5f7;border-radius:10px;padding:14px 16px;margin:18px 0}
+  .paraquem h3{font-size:14px;margin-bottom:6px;color:#333}
+  .paraquem p{font-size:15px;color:#444;margin-bottom:0}
+  .patrocinado{display:block;text-align:center;font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.5px;margin:0 0 8px}
+  .disclosure{font-size:12px;color:#999;text-align:center;margin-bottom:4px}
   .depo{background:#f4f5f7;border-left:4px solid ${cor};border-radius:10px;padding:16px;margin:18px 0}
   .depo p{font-style:italic;margin-bottom:6px}
   .depo span{font-size:13px;font-weight:700;color:#555}
@@ -472,13 +524,19 @@ function gerarPaginaHTML(d) {
     ${imgHero}
     ${corpo}
     ${beneficios}
+    ${limitacoesBloco}
+    ${paraQuemBloco}
     ${depo}
     ${precoBloco}
     ${contador}
+    ${patrocinadoTag}
     <a class="cta" href="${esc(link)}" target="_blank" rel="noopener">${btn} ›</a>
-    <div class="rodape">Este site pode receber comissão por indicações. Resultados variam de pessoa para pessoa.</div>
+    <div class="rodape">
+      <p class="disclosure">${disclosure}</p>
+      <p>Resultados podem variar de pessoa para pessoa.</p>
+    </div>
   </div>
-  <div class="barra"><a href="${esc(link)}" target="_blank" rel="noopener">${btn} ›</a></div>
+  <div class="barra">${patrocinadoTag ? `<span class="patrocinado" style="margin-bottom:4px">Link patrocinado</span>` : ''}<a href="${esc(link)}" target="_blank" rel="noopener">${btn} ›</a></div>
   ${scriptContador}
 </body>
 </html>`;
