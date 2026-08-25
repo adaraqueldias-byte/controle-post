@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Controle de Vídeos</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7c3aed">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0d0d17;
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 14px 14px 60px;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .app-titulo {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #a78bfa;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .app-subtitulo {
+    text-align: center;
+    font-size: 11px;
+    color: #6b6b8a;
+    margin-bottom: 18px;
+  }
+
+  .btn-add {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    width: 100%; padding: 10px;
+    background: linear-gradient(135deg, #7c3aed, #9333ea);
+    border: none; border-radius: 10px;
+    color: #fff; font-size: 13px; font-weight: 700;
+    cursor: pointer; margin-bottom: 14px;
+    transition: filter .2s, transform .1s;
+    box-shadow: 0 4px 14px rgba(124,58,237,.3);
+  }
+  .btn-add:hover { filter: brightness(1.1); }
+  .btn-add:active { transform: scale(.98); }
+
+  /* BUSCA E FILTROS */
+  .busca-wrap { margin-bottom: 10px; }
+  .busca-wrap input {
+    width: 100%; background: #18182c; border: 1px solid #2a2a44;
+    border-radius: 10px; color: #e0e0e0; font-size: 13px;
+    padding: 10px 12px; outline: none;
+  }
+  .busca-wrap input:focus { border-color: #7c3aed; }
+  .filtros { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+  .chip-filtro {
+    font-size: 11px; padding: 6px 11px; border-radius: 14px;
+    border: 1px solid #2a2a44; background: #18182c; color: #8888b0;
+    cursor: pointer; user-select: none; transition: all .15s;
+  }
+  .chip-filtro.on { border-color: #7c3aed; background: #1c1438; color: #c4b5fd; font-weight: 700; }
+
+  /* MODAL */
+  .overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.75); z-index: 100;
+    align-items: center; justify-content: center; padding: 20px;
+    backdrop-filter: blur(3px);
+  }
+  .overlay.open { display: flex; }
+  .modal {
+    background: #18182c; border-radius: 18px; padding: 24px;
+    width: 100%; max-width: 420px; border: 1px solid #2a2a44;
+    animation: pop .18s ease;
+    max-height: 90vh; overflow-y: auto;
+  }
+  @keyframes pop { from { transform: scale(.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal h3 { font-size: 18px; margin-bottom: 16px; color: #fff; }
+  .modal label { display: block; font-size: 12px; color: #8888b0; margin-bottom: 6px; }
+  .modal input, .modal textarea {
+    width: 100%; background: #0d0d17; border: 1px solid #2a2a44;
+    border-radius: 10px; color: #e0e0e0; font-size: 13px;
+    padding: 10px 12px; margin-bottom: 14px; outline: none;
+    font-family: inherit;
+  }
+  .modal textarea { resize: vertical; min-height: 60px; }
+  .modal input:focus, .modal textarea:focus { border-color: #7c3aed; }
+
+  .modal-btns { display: flex; gap: 10px; margin-top: 4px; }
+  .btn-salvar {
+    flex: 1; padding: 13px; background: linear-gradient(135deg,#7c3aed,#9333ea);
+    border: none; border-radius: 10px; color: #fff;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+  .btn-salvar:disabled { opacity: .6; cursor: not-allowed; }
+  .btn-cancelar {
+    flex: 1; padding: 13px; background: #20203a; border: none;
+    border-radius: 10px; color: #a0a0c0; font-size: 15px; cursor: pointer;
+  }
+
+  .status-txt { font-size: 11px; color: #a78bfa; margin: -8px 0 12px; }
+  .aviso-texto {
+    font-size: 11px; color: #7a7a9a; line-height: 1.5; margin-top: -6px; margin-bottom: 14px;
+  }
+
+  /* CARD DE VÍDEO */
+  .card {
+    background: #18182c; border-radius: 16px; padding: 14px;
+    margin-bottom: 12px; border: 1px solid #2a2a44;
+    transition: border-color .3s;
+  }
+  .card.completo {
+    border-color: #22c55e;
+    background: linear-gradient(180deg, #14241a 0%, #18182c 60%);
+  }
+  .card-top {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 12px; gap: 8px;
+  }
+  .prod-foto-wrap {
+    display: flex; align-items: flex-start; gap: 10px;
+    flex: 1; min-width: 0;
+  }
+  .prod-foto {
+    width: 56px; height: 56px; border-radius: 10px;
+    object-fit: cover; border: 1px solid #2a2a44; flex-shrink: 0;
+  }
+  .prod-foto-vazia {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; background: #0d0d17; color: #3a3a5a;
+  }
+  .prod-info-col { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+  .card-data { font-size: 10px; color: #5a5a92; }
+  .prod-nome {
+    font-size: 14px; font-weight: 600; color: #fff;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-acoes { display: flex; align-items: flex-start; gap: 1px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; max-width: 90px; }
+  .btn-icone {
+    background: none; border: none; color: #55557a;
+    font-size: 14px; cursor: pointer; padding: 5px 6px;
+    border-radius: 8px; transition: color .2s, background .2s;
+  }
+  .btn-icone:hover { background: #20203a; }
+
+  /* CHIPS DE REDE */
+  .canais { display: flex; gap: 8px; flex-wrap: wrap; }
+  .rede-chip-wrap {
+    display: flex; align-items: center; gap: 4px;
+    background: #1a1a2e; border: 1px solid #2e2e4a; border-radius: 11px;
+    overflow: hidden;
+  }
+  .rede-chip {
+    display: flex; align-items: center; gap: 4px;
+    padding: 6px 10px; border: none; background: transparent;
+    cursor: pointer; transition: all .15s; color: #9090b8; font-size: 12px;
+  }
+  .rede-chip.on { background: #22c55e; color: #fff; font-weight: 700; }
+  .rede-chip .check { font-size: 12px; }
+  .rede-data {
+    border: none; background: transparent; color: #6a6a90; font-size: 10.5px;
+    padding: 6px 8px 6px 0; cursor: pointer; border-left: 1px solid #2e2e4a;
+  }
+  .rede-data:hover { color: #a78bfa; }
+
+  /* VAZIO */
+  .vazio { text-align: center; padding: 56px 20px; color: #44446a; }
+  .vazio-icone { font-size: 52px; margin-bottom: 14px; }
+  .vazio p { font-size: 15px; line-height: 1.5; }
+
+  /* RODAPÉ */
+  .rodape {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-top: 18px; padding-top: 14px; border-top: 1px solid #20203a;
+  }
+  .rodape-btn {
+    background: transparent; border: none; color: #8888b0;
+    font-size: 13px; padding: 6px 10px; cursor: pointer; border-radius: 8px;
+  }
+  .rodape-btn:hover { background: #18182c; color: #c4b5fd; }
+  .painel-mais {
+    display: none; flex-direction: column; gap: 6px;
+    margin-top: 10px; padding: 10px; background: #14142a;
+    border: 1px solid #20203a; border-radius: 10px;
+  }
+  .painel-mais.aberto { display: flex; }
+  .painel-mais button {
+    background: transparent; border: 1px solid #2a2a44; border-radius: 8px;
+    color: #9090b8; font-size: 13px; padding: 9px; cursor: pointer;
+  }
+  .painel-mais button:hover { background: #18182c; color: #c4b5fd; }
+  .painel-mais .aviso-texto { margin: 2px 0 6px; }
+
+  /* ESCOLHER ARQUIVO */
+  .btn-arquivo {
+    width: 100%; padding: 10px; background: #0d0d17; border: 1px dashed #3a3a5a;
+    border-radius: 10px; color: #8888b0; font-size: 13px; cursor: pointer;
+    margin-bottom: 6px;
+  }
+  .preview-thumb-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .preview-thumb-wrap img {
+    width: 60px; height: 60px; border-radius: 8px; object-fit: cover;
+    border: 1px solid #2a2a44; display: none;
+  }
+  .video-nome { font-size: 11px; color: #7a7a9a; word-break: break-all; }
+
+  /* PLAYER */
+  .player-overlay {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,.92); align-items: center; justify-content: center;
+    padding: 16px;
+  }
+  .player-overlay.open { display: flex; }
+  .player-box { width: 100%; max-width: 420px; }
+  .player-box video { width: 100%; max-height: 80vh; border-radius: 12px; background: #000; }
+  .player-fechar {
+    display: block; margin: 12px auto 0; background: #20203a; border: none;
+    border-radius: 8px; color: #cfcfe8; padding: 10px 18px; font-size: 13px; cursor: pointer;
+  }
+  .player-aviso {
+    display: none; background: #2a1414; color: #f87171; border: 1px solid #4a1c1c;
+    border-radius: 10px; padding: 14px; font-size: 13px; line-height: 1.5; text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="app-titulo">Controle de Vídeos</div>
+<div class="app-subtitulo">Suas histórias em vídeo, legenda, data e controle de postagem</div>
+
+<button class="btn-add" onclick="abrirModal()">＋ Novo vídeo</button>
+
+<div class="busca-wrap">
+  <input type="text" id="inp-busca" placeholder="🔎 Buscar por legenda...">
+</div>
+<div class="filtros">
+  <span class="chip-filtro" data-filtro="todos">Todos</span>
+  <span class="chip-filtro" data-filtro="faltando_instagram">Faltando Instagram</span>
+  <span class="chip-filtro" data-filtro="faltando_tiktok">Faltando TikTok</span>
+  <span class="chip-filtro" data-filtro="completos">Completos</span>
+</div>
+
+<div id="lista"></div>
+
+<div class="rodape">
+  <button class="rodape-btn" onclick="toggleMais()">⋯ Mais</button>
+</div>
+<div id="painel-mais" class="painel-mais">
+  <div class="aviso-texto">
+    O backup abaixo salva só legenda/data/status (não os vídeos). Use "Baixar" em cada
+    vídeo para guardar o arquivo dele em outro lugar.
+  </div>
+  <button onclick="baixarBackupMeta()">💾 Baixar backup (legendas/datas)</button>
+  <button onclick="document.getElementById('inp-restaurar').click()">⬆️ Restaurar backup (arquivo)</button>
+  <input type="file" id="inp-restaurar" accept=".json" style="display:none" onchange="restaurarBackupMeta(this)">
+</div>
+
+<!-- MODAL NOVO/EDITAR -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="modal-titulo">Novo vídeo</h3>
+
+    <label>Arquivo de vídeo</label>
+    <button type="button" class="btn-arquivo" onclick="document.getElementById('inp-video').click()">🎬 Escolher vídeo</button>
+    <input type="file" id="inp-video" accept="video/*" style="display:none" onchange="onEscolherVideo(this)">
+    <div class="preview-thumb-wrap">
+      <img id="preview-thumb" src="" alt="">
+      <span class="video-nome" id="preview-video-nome"></span>
+    </div>
+    <div class="status-txt" id="status-thumb"></div>
+
+    <label>Legenda</label>
+    <textarea id="inp-legenda" placeholder="Legenda que você vai usar ao postar"></textarea>
+
+    <label>Data</label>
+    <input type="date" id="inp-data">
+
+    <div class="modal-btns">
+      <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+      <button class="btn-salvar" id="btn-salvar-video" onclick="salvarVideo()">Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRMAÇÃO EXCLUIR -->
+<div class="overlay" id="conf-overlay">
+  <div class="modal" style="max-width:320px;text-align:center">
+    <p style="font-size:15px;color:#e0e0e0;margin-bottom:8px">Excluir vídeo?</p>
+    <p id="conf-nome" style="font-size:14px;color:#f87171;margin-bottom:8px;word-break:break-word"></p>
+    <p style="font-size:11px;color:#7a7a9a;margin-bottom:20px">O arquivo de vídeo salvo neste aparelho também será apagado.</p>
+    <div class="modal-btns">
+      <button class="btn-cancelar" onclick="cancelarExcluir()">Não</button>
+      <button class="btn-salvar" style="background:linear-gradient(135deg,#dc2626,#ef4444)" onclick="confirmarExcluir()">Sim, excluir</button>
+    </div>
+  </div>
+</div>
+
+<!-- PLAYER -->
+<div class="player-overlay" id="player-overlay">
+  <div class="player-box">
+    <video id="player-video" controls playsinline></video>
+    <div class="player-aviso" id="player-aviso"></div>
+    <button class="player-fechar" onclick="fecharPlayer()">✕ Fechar</button>
+  </div>
+</div>
+
+<script>
+// ============ IndexedDB (guarda o arquivo de vídeo em si) ============
+const DB_NAME = 'controle-videos-db';
+const STORE = 'videos';
+let dbPromise = null;
+
+function abrirDB() {
+  if (dbPromise) return dbPromise;
+  dbPromise = new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(STORE)) {
+        db.createObjectStore(STORE, { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+  return dbPromise;
+}
+
+async function salvarVideoBlob(id, file) {
+  const db = await abrirDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).put({ id, blob: file, tipo: file.type, tamanho: file.size });
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function pegarVideoBlob(id) {
+  const db = await abrirDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readonly');
+    const req = tx.objectStore(STORE).get(id);
+    req.onsuccess = () => resolve(req.result || null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function excluirVideoBlob(id) {
+  const db = await abrirDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).delete(id);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+// ============ localStorage (metadados: legenda, data, status) ============
+const LS_KEY = 'videos_lista';
+
+function carregarLista() {
+  return JSON.parse(localStorage.getItem(LS_KEY) || '[]');
+}
+function salvarLista(lista) {
+  localStorage.setItem(LS_KEY, JSON.stringify(lista));
+}
+function hojeISO() {
+  return new Date().toISOString().slice(0, 10);
+}
+function escapar(s) {
+  return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+function formatarData(iso) {
+  if (!iso) return '';
+  const partes = iso.split('-');
+  if (partes.length !== 3) return iso;
+  return partes[2] + '/' + partes[1] + '/' + partes[0];
+}
+
+// ============ Geração de thumbnail a partir de um frame do vídeo ============
+function gerarThumbnail(file) {
+  return new Promise(resolve => {
+    const video = document.createElement('video');
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = 'metadata';
+    video.style.position = 'fixed';
+    video.style.left = '-9999px';
+    const url = URL.createObjectURL(file);
+    video.src = url;
+
+    let resolvido = false;
+    const finalizar = (thumb) => {
+      if (resolvido) return;
+      resolvido = true;
+      clearTimeout(timeoutId);
+      URL.revokeObjectURL(url);
+      video.remove();
+      resolve(thumb);
+    };
+    const timeoutId = setTimeout(() => finalizar(null), 5000);
+
+    video.addEventListener('loadedmetadata', () => {
+      const alvo = Math.min(1, (video.duration || 1) / 2);
+      try { video.currentTime = alvo; } catch (e) { finalizar(null); }
+    });
+    video.addEventListener('seeked', () => {
+      try {
+        const MAX = 260;
+        let w = video.videoWidth, h = video.videoHeight;
+        if (!w || !h) { finalizar(null); return; }
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+          else { w = Math.round(w * MAX / h); h = MAX; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(video, 0, 0, w, h);
+        finalizar(canvas.toDataURL('image/jpeg', 0.5));
+      } catch (e) { finalizar(null); }
+    });
+    video.addEventListener('error', () => finalizar(null));
+
+    document.body.appendChild(video);
+  });
+}
+
+// ============ Estado da lista (busca/filtro) ============
+let filtroAtual = 'todos';
+let termoBusca = '';
+
+function itemCompleto(v) { return v.instagram.postado && v.tiktok.postado; }
+
+function passaFiltro(v) {
+  if (filtroAtual === 'faltando_instagram') return !v.instagram.postado;
+  if (filtroAtual === 'faltando_tiktok') return !v.tiktok.postado;
+  if (filtroAtual === 'completos') return itemCompleto(v);
+  return true;
+}
+
+function chipRedeHtml(v, rede, label) {
+  const info = v[rede];
+  const on = !!info.postado;
+  const dataTxt = info.data ? formatarData(info.data) : '';
+  return `<div class="rede-chip-wrap">
+    <button type="button" class="rede-chip${on ? ' on' : ''}" data-action="toggle-rede" data-id="${v.id}" data-rede="${rede}">
+      <span>${label}</span>
+      ${on ? '<span class="check">✓</span>' : ''}
+    </button>
+    <button type="button" class="rede-data" data-action="editar-data" data-id="${v.id}" data-rede="${rede}" title="Editar data">
+      ${dataTxt || '+ data'}
+    </button>
+  </div>`;
+}
+
+function cardHtml(v) {
+  const completo = itemCompleto(v);
+  const foto = v.thumb
+    ? `<img class="prod-foto" src="${v.thumb}" alt="">`
+    : `<div class="prod-foto prod-foto-vazia">🎬</div>`;
+  return `
+  <div class="card${completo ? ' completo' : ''}">
+    <div class="card-top">
+      <div class="prod-foto-wrap" data-action="play" data-id="${v.id}" style="cursor:pointer">
+        ${foto}
+        <div class="prod-info-col">
+          <span class="card-data">${formatarData(v.dataCriacao)}</span>
+          <span class="prod-nome">${escapar(v.legenda || '(sem legenda)')}</span>
+        </div>
+      </div>
+      <div class="card-acoes">
+        <button class="btn-icone" data-action="play" data-id="${v.id}" title="Assistir">▶️</button>
+        <button class="btn-icone" data-action="baixar" data-id="${v.id}" title="Baixar">⬇️</button>
+        <button class="btn-icone" data-action="editar" data-id="${v.id}" title="Editar">✏️</button>
+        <button class="btn-icone" data-action="excluir" data-id="${v.id}" title="Excluir">🗑️</button>
+      </div>
+    </div>
+    <div class="canais">
+      ${chipRedeHtml(v, 'instagram', 'Instagram')}
+      ${chipRedeHtml(v, 'tiktok', 'TikTok')}
+    </div>
+  </div>`;
+}
+
+function renderLista() {
+  const lista = carregarLista().slice().sort((a, b) => b.criadoEm - a.criadoEm);
+
+  document.querySelectorAll('.chip-filtro').forEach(el => {
+    el.classList.toggle('on', el.dataset.filtro === filtroAtual);
+  });
+
+  const cont = document.getElementById('lista');
+  if (lista.length === 0) {
+    cont.innerHTML = `<div class="vazio">
+      <div class="vazio-icone">🎬</div>
+      <p>Nenhum vídeo ainda.<br>Toque em <b>"+ Novo vídeo"</b> para começar.</p>
+    </div>`;
+    return;
+  }
+
+  const termo = termoBusca.trim().toLowerCase();
+  const filtrada = lista.filter(v => passaFiltro(v) && (!termo || (v.legenda || '').toLowerCase().includes(termo)));
+
+  if (filtrada.length === 0) {
+    cont.innerHTML = `<div class="vazio">
+      <div class="vazio-icone">🔎</div>
+      <p>Nenhum vídeo encontrado com essa busca/filtro.</p>
+    </div>`;
+    return;
+  }
+
+  cont.innerHTML = filtrada.map(cardHtml).join('');
+}
+
+document.getElementById('inp-busca').addEventListener('input', e => {
+  termoBusca = e.target.value;
+  renderLista();
+});
+document.querySelectorAll('.chip-filtro').forEach(el => {
+  el.addEventListener('click', () => {
+    filtroAtual = el.dataset.filtro;
+    renderLista();
+  });
+});
+
+// ============ Ações da lista (delegação de eventos) ============
+document.getElementById('lista').addEventListener('click', e => {
+  const alvo = e.target.closest('[data-action]');
+  if (!alvo) return;
+  const { action, id, rede } = alvo.dataset;
+  if (action === 'toggle-rede') toggleRede(id, rede);
+  else if (action === 'editar-data') editarDataRede(id, rede);
+  else if (action === 'play') abrirPlayer(id);
+  else if (action === 'baixar') baixarVideo(id);
+  else if (action === 'editar') abrirModal(id);
+  else if (action === 'excluir') pedirExcluir(id);
+});
+
+function toggleRede(id, rede) {
+  const lista = carregarLista();
+  const item = lista.find(v => v.id === id);
+  if (!item) return;
+  const info = item[rede];
+  if (!info.postado) {
+    info.postado = true;
+    if (!info.data) info.data = hojeISO();
+  } else {
+    info.postado = false;
+  }
+  salvarLista(lista);
+  renderLista();
+}
+
+function editarDataRede(id, rede) {
+  const lista = carregarLista();
+  const item = lista.find(v => v.id === id);
+  if (!item) return;
+  const nomeRede = rede === 'instagram' ? 'Instagram' : 'TikTok';
+  const atual = item[rede].data || hojeISO();
+  const nova = prompt('Data que postou no ' + nomeRede + ' (AAAA-MM-DD):', atual);
+  if (nova === null) return;
+  const valor = nova.trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(valor)) { alert('Data inválida. Use o formato AAAA-MM-DD.'); return; }
+  item[rede].data = valor;
+  item[rede].postado = true;
+  salvarLista(lista);
+  renderLista();
+}
+
+// ============ Modal novo/editar ============
+let editandoId = null;
+let videoFileAtual = null;
+let thumbAtual = null;
+
+function abrirModal(id) {
+  editandoId = id || null;
+  videoFileAtual = null;
+  thumbAtual = null;
+  document.getElementById('inp-video').value = '';
+  document.getElementById('preview-video-nome').textContent = '';
+  document.getElementById('status-thumb').textContent = '';
+  const img = document.getElementById('preview-thumb');
+  img.style.display = 'none';
+  img.src = '';
+
+  if (editandoId) {
+    const item = carregarLista().find(v => v.id === editandoId);
+    document.getElementById('inp-legenda').value = item.legenda || '';
+    document.getElementById('inp-data').value = item.dataCriacao || hojeISO();
+    document.getElementById('preview-video-nome').textContent = item.nomeArquivo || '';
+    thumbAtual = item.thumb || null;
+    if (thumbAtual) { img.src = thumbAtual; img.style.display = 'block'; }
+    document.getElementById('modal-titulo').textContent = 'Editar vídeo';
+    document.getElementById('btn-salvar-video').textContent = 'Salvar';
+  } else {
+    document.getElementById('inp-legenda').value = '';
+    document.getElementById('inp-data').value = hojeISO();
+    document.getElementById('modal-titulo').textContent = 'Novo vídeo';
+    document.getElementById('btn-salvar-video').textContent = 'Adicionar';
+  }
+  document.getElementById('overlay').classList.add('open');
+}
+
+function fecharModal() {
+  editandoId = null;
+  document.getElementById('overlay').classList.remove('open');
+}
+
+async function onEscolherVideo(input) {
+  const file = input.files[0];
+  if (!file) return;
+  videoFileAtual = file;
+  document.getElementById('preview-video-nome').textContent = file.name;
+  document.getElementById('status-thumb').textContent = 'Gerando capa...';
+  const thumb = await gerarThumbnail(file);
+  thumbAtual = thumb;
+  document.getElementById('status-thumb').textContent = thumb ? '' : 'Não foi possível gerar a capa (o vídeo foi salvo normalmente).';
+  const img = document.getElementById('preview-thumb');
+  if (thumb) { img.src = thumb; img.style.display = 'block'; }
+  else { img.style.display = 'none'; }
+}
+
+async function salvarVideo() {
+  const legenda = document.getElementById('inp-legenda').value.trim();
+  const dataCriacao = document.getElementById('inp-data').value || hojeISO();
+
+  if (!editandoId && !videoFileAtual) {
+    alert('Escolha um arquivo de vídeo.');
+    return;
+  }
+
+  const eraEdicao = !!editandoId;
+  const lista = carregarLista();
+  const btn = document.getElementById('btn-salvar-video');
+  btn.disabled = true;
+  btn.textContent = 'Salvando...';
+
+  try {
+    if (eraEdicao) {
+      const item = lista.find(v => v.id === editandoId);
+      item.legenda = legenda;
+      item.dataCriacao = dataCriacao;
+      item.thumb = thumbAtual;
+      if (videoFileAtual) {
+        await salvarVideoBlob(item.id, videoFileAtual);
+        item.nomeArquivo = videoFileAtual.name;
+      }
+    } else {
+      const id = 'v_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+      await salvarVideoBlob(id, videoFileAtual);
+      lista.push({
+        id,
+        criadoEm: Date.now(),
+        dataCriacao,
+        legenda,
+        thumb: thumbAtual,
+        nomeArquivo: videoFileAtual.name,
+        instagram: { postado: false, data: null },
+        tiktok: { postado: false, data: null },
+      });
+    }
+    salvarLista(lista);
+    fecharModal();
+    renderLista();
+  } catch (e) {
+    alert('Erro ao salvar o vídeo: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = eraEdicao ? 'Salvar' : 'Adicionar';
+  }
+}
+
+document.getElementById('overlay').addEventListener('click', function (e) {
+  if (e.target === this) fecharModal();
+});
+
+// ============ Player ============
+let playerUrlAtual = null;
+
+async function abrirPlayer(id) {
+  const registro = await pegarVideoBlob(id);
+  const overlay = document.getElementById('player-overlay');
+  const video = document.getElementById('player-video');
+  const aviso = document.getElementById('player-aviso');
+
+  if (!registro || !registro.blob) {
+    video.style.display = 'none';
+    aviso.style.display = 'block';
+    aviso.textContent = '⚠️ Vídeo não disponível neste aparelho. (Pode ter sido restaurado de um backup de legendas/datas, que não inclui o arquivo de vídeo.)';
+    overlay.classList.add('open');
+    return;
+  }
+
+  aviso.style.display = 'none';
+  video.style.display = 'block';
+  playerUrlAtual = URL.createObjectURL(registro.blob);
+  video.src = playerUrlAtual;
+  overlay.classList.add('open');
+  video.play().catch(() => {});
+}
+
+function fecharPlayer() {
+  const video = document.getElementById('player-video');
+  video.pause();
+  video.removeAttribute('src');
+  video.load();
+  if (playerUrlAtual) { URL.revokeObjectURL(playerUrlAtual); playerUrlAtual = null; }
+  document.getElementById('player-overlay').classList.remove('open');
+}
+document.getElementById('player-overlay').addEventListener('click', function (e) {
+  if (e.target === this) fecharPlayer();
+});
+
+// ============ Baixar vídeo individual ============
+async function baixarVideo(id) {
+  const registro = await pegarVideoBlob(id);
+  if (!registro || !registro.blob) { alert('Vídeo não disponível neste aparelho.'); return; }
+  const item = carregarLista().find(v => v.id === id);
+  const nome = (item && item.nomeArquivo) || (id + '.mp4');
+  const url = URL.createObjectURL(registro.blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = nome; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ============ Excluir ============
+let _excluirId = null;
+function pedirExcluir(id) {
+  const item = carregarLista().find(v => v.id === id);
+  if (!item) return;
+  _excluirId = id;
+  document.getElementById('conf-nome').textContent = '"' + (item.legenda || '(sem legenda)') + '"';
+  document.getElementById('conf-overlay').classList.add('open');
+}
+async function confirmarExcluir() {
+  document.getElementById('conf-overlay').classList.remove('open');
+  if (!_excluirId) return;
+  const lista = carregarLista().filter(v => v.id !== _excluirId);
+  salvarLista(lista);
+  await excluirVideoBlob(_excluirId);
+  _excluirId = null;
+  renderLista();
+}
+function cancelarExcluir() {
+  document.getElementById('conf-overlay').classList.remove('open');
+  _excluirId = null;
+}
+
+// ============ Rodapé / backup de metadados ============
+function toggleMais() { document.getElementById('painel-mais').classList.toggle('aberto'); }
+
+function baixarBackupMeta() {
+  const lista = carregarLista();
+  const blob = new Blob([JSON.stringify(lista, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const hoje = new Date();
+  const nome = 'controle-videos-backup-' + hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0') + '-' + String(hoje.getDate()).padStart(2, '0') + '.json';
+  const a = document.createElement('a');
+  a.href = url; a.download = nome; a.click();
+  URL.revokeObjectURL(url);
+  alert('💾 Backup salvo: ' + nome + '\n\n⚠️ Este arquivo guarda só legendas/datas/status — NÃO os vídeos. Os vídeos ficam neste aparelho; use "⬇️ Baixar" em cada item para guardá-los em outro lugar também.');
+}
+
+function restaurarBackupMeta(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const lista = JSON.parse(e.target.result);
+      if (!Array.isArray(lista)) throw new Error('formato inválido');
+      if (!confirm('Restaurar este backup? Os dados de controle atuais (legendas/datas/status) serão substituídos pelos do arquivo.\n\nOs vídeos continuam sendo os que já estão neste aparelho — itens sem o vídeo aqui aparecerão como "não disponível".')) return;
+      salvarLista(lista);
+      alert('✅ Backup restaurado com sucesso!');
+      renderLista();
+    } catch (err) { alert('Arquivo inválido. Use um backup gerado por este app.'); }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+// ============ Início ============
+renderLista();
+
+// Registra o service worker (funcionar offline no celular)
+// e recarrega sozinho quando achar uma versao nova
+if ('serviceWorker' in navigator) {
+  let recarregando = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (recarregando) return;
+    recarregando = true;
+    window.location.reload();
+  });
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    reg.addEventListener('updatefound', () => {
+      const novo = reg.installing;
+      if (!novo) return;
+      novo.addEventListener('statechange', () => {
+        if (novo.state === 'installed' && navigator.serviceWorker.controller) {
+          novo.postMessage('skipWaiting');
+        }
+      });
+    });
+    setInterval(() => reg.update().catch(() => {}), 60000);
+  }).catch(() => {});
+}
+</script>
+</body>
+</html>
