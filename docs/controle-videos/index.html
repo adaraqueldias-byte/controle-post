@@ -205,12 +205,22 @@
     border-radius: 10px; color: #8888b0; font-size: 13px; cursor: pointer;
     margin-bottom: 6px;
   }
-  .preview-thumb-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-  .preview-thumb-wrap img {
-    width: 60px; height: 60px; border-radius: 8px; object-fit: cover;
-    border: 1px solid #2a2a44; display: none;
-  }
+  .preview-thumb-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .video-nome { font-size: 11px; color: #7a7a9a; word-break: break-all; }
+
+  /* MINIATURA AO LADO DA LEGENDA (fica visível enquanto cola o texto) */
+  .legendas-area { display: flex; gap: 12px; align-items: flex-start; }
+  .legendas-thumb-col { flex-shrink: 0; position: sticky; top: 0; }
+  .legendas-thumb-col img, .legendas-thumb-col .thumb-vazia {
+    width: 84px; height: 84px; border-radius: 10px; object-fit: cover;
+    border: 1px solid #2a2a44;
+  }
+  .legendas-thumb-col img { display: none; }
+  .legendas-thumb-col .thumb-vazia {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; background: #0d0d17; color: #3a3a5a;
+  }
+  .legendas-col { flex: 1; min-width: 0; }
 
   /* PLAYER */
   .player-overlay {
@@ -269,16 +279,23 @@
     <button type="button" class="btn-arquivo" onclick="document.getElementById('inp-video').click()">🎬 Escolher vídeo</button>
     <input type="file" id="inp-video" accept="video/*" style="display:none" onchange="onEscolherVideo(this)">
     <div class="preview-thumb-wrap">
-      <img id="preview-thumb" src="" alt="">
       <span class="video-nome" id="preview-video-nome"></span>
     </div>
     <div class="status-txt" id="status-thumb"></div>
 
-    <label>Legenda do Instagram</label>
-    <textarea id="inp-legenda-instagram" placeholder="Legenda que você vai usar ao postar no Instagram"></textarea>
+    <div class="legendas-area">
+      <div class="legendas-thumb-col">
+        <img id="preview-thumb" src="" alt="">
+        <div class="thumb-vazia" id="preview-thumb-vazio">🎬</div>
+      </div>
+      <div class="legendas-col">
+        <label>Legenda do Instagram</label>
+        <textarea id="inp-legenda-instagram" placeholder="Legenda que você vai usar ao postar no Instagram"></textarea>
 
-    <label>Legenda do TikTok</label>
-    <textarea id="inp-legenda-tiktok" placeholder="Legenda que você vai usar ao postar no TikTok"></textarea>
+        <label>Legenda do TikTok</label>
+        <textarea id="inp-legenda-tiktok" placeholder="Legenda que você vai usar ao postar no TikTok"></textarea>
+      </div>
+    </div>
 
     <label>Data</label>
     <input type="date" id="inp-data">
@@ -595,6 +612,20 @@ let editandoId = null;
 let videoFileAtual = null;
 let thumbAtual = null;
 
+function atualizarThumbPreview(thumb) {
+  const img = document.getElementById('preview-thumb');
+  const vazio = document.getElementById('preview-thumb-vazio');
+  if (thumb) {
+    img.src = thumb;
+    img.style.display = 'block';
+    vazio.style.display = 'none';
+  } else {
+    img.style.display = 'none';
+    img.src = '';
+    vazio.style.display = 'flex';
+  }
+}
+
 function abrirModal(id) {
   editandoId = id || null;
   videoFileAtual = null;
@@ -602,9 +633,7 @@ function abrirModal(id) {
   document.getElementById('inp-video').value = '';
   document.getElementById('preview-video-nome').textContent = '';
   document.getElementById('status-thumb').textContent = '';
-  const img = document.getElementById('preview-thumb');
-  img.style.display = 'none';
-  img.src = '';
+  atualizarThumbPreview(null);
 
   if (editandoId) {
     const item = carregarLista().find(v => v.id === editandoId);
@@ -613,7 +642,7 @@ function abrirModal(id) {
     document.getElementById('inp-data').value = item.dataCriacao || hojeISO();
     document.getElementById('preview-video-nome').textContent = item.nomeArquivo || '';
     thumbAtual = item.thumb || null;
-    if (thumbAtual) { img.src = thumbAtual; img.style.display = 'block'; }
+    atualizarThumbPreview(thumbAtual);
     document.getElementById('modal-titulo').textContent = 'Editar vídeo';
     document.getElementById('btn-salvar-video').textContent = 'Salvar';
   } else {
@@ -640,9 +669,7 @@ async function onEscolherVideo(input) {
   const thumb = await gerarThumbnail(file);
   thumbAtual = thumb;
   document.getElementById('status-thumb').textContent = thumb ? '' : 'Não foi possível gerar a capa (o vídeo foi salvo normalmente).';
-  const img = document.getElementById('preview-thumb');
-  if (thumb) { img.src = thumb; img.style.display = 'block'; }
-  else { img.style.display = 'none'; }
+  atualizarThumbPreview(thumb);
 }
 
 async function salvarVideo() {
