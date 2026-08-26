@@ -40,10 +40,10 @@
 
   .btn-add {
     display: flex; align-items: center; justify-content: center; gap: 6px;
-    width: 100%; padding: 10px;
+    width: 100%; padding: 14px;
     background: linear-gradient(135deg, #7c3aed, #9333ea);
-    border: none; border-radius: 10px;
-    color: #fff; font-size: 13px; font-weight: 700;
+    border: none; border-radius: 12px;
+    color: #fff; font-size: 15px; font-weight: 700;
     cursor: pointer; margin-bottom: 14px;
     transition: filter .2s, transform .1s;
     box-shadow: 0 4px 14px rgba(124,58,237,.3);
@@ -52,9 +52,9 @@
   .btn-add:active { transform: scale(.98); }
 
   /* FILTROS */
-  .filtros { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+  .filtros { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
   .chip-filtro {
-    font-size: 11px; padding: 6px 11px; border-radius: 14px;
+    font-size: 13px; padding: 10px 16px; border-radius: 16px;
     border: 1px solid #2a2a44; background: #18182c; color: #8888b0;
     cursor: pointer; user-select: none; transition: all .15s;
   }
@@ -76,26 +76,37 @@
   }
   @keyframes pop { from { transform: scale(.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   .modal h3 { font-size: 18px; margin-bottom: 16px; color: #fff; }
-  .modal label { display: block; font-size: 12px; color: #8888b0; margin-bottom: 6px; }
+  .modal label { display: block; font-size: 13px; color: #8888b0; margin-bottom: 6px; }
   .modal input, .modal textarea {
     width: 100%; background: #0d0d17; border: 1px solid #2a2a44;
-    border-radius: 10px; color: #e0e0e0; font-size: 13px;
-    padding: 10px 12px; margin-bottom: 14px; outline: none;
+    border-radius: 10px; color: #e0e0e0; font-size: 15px;
+    padding: 12px 14px; margin-bottom: 8px; outline: none;
     font-family: inherit;
   }
-  .modal textarea { resize: vertical; min-height: 60px; }
+  .modal textarea { resize: vertical; min-height: 140px; line-height: 1.5; }
   .modal input:focus, .modal textarea:focus { border-color: #7c3aed; }
+
+  /* AÇÕES DA LEGENDA (copiar / limpar) */
+  .legenda-acoes { display: flex; gap: 8px; margin-bottom: 14px; }
+  .btn-legenda-acao {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px;
+    padding: 10px; background: #0d0d17; border: 1px solid #2a2a44;
+    border-radius: 9px; color: #a0a0c0; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: background .2s;
+  }
+  .btn-legenda-acao:hover { background: #20203a; }
+  .btn-legenda-acao.btn-legenda-limpar { color: #f2a0a0; }
 
   .modal-btns { display: flex; gap: 10px; margin-top: 4px; }
   .btn-salvar {
-    flex: 1; padding: 13px; background: linear-gradient(135deg,#7c3aed,#9333ea);
-    border: none; border-radius: 10px; color: #fff;
-    font-size: 15px; font-weight: 700; cursor: pointer;
+    flex: 1; padding: 15px; background: linear-gradient(135deg,#7c3aed,#9333ea);
+    border: none; border-radius: 12px; color: #fff;
+    font-size: 16px; font-weight: 700; cursor: pointer;
   }
   .btn-salvar:disabled { opacity: .6; cursor: not-allowed; }
   .btn-cancelar {
-    flex: 1; padding: 13px; background: #20203a; border: none;
-    border-radius: 10px; color: #a0a0c0; font-size: 15px; cursor: pointer;
+    flex: 1; padding: 15px; background: #20203a; border: none;
+    border-radius: 12px; color: #a0a0c0; font-size: 16px; cursor: pointer;
   }
 
   .status-txt { font-size: 11px; color: #a78bfa; margin: -8px 0 12px; }
@@ -143,11 +154,13 @@
   .legenda-tag.ig { background: linear-gradient(135deg,#f09433,#dc2743,#bc1888); color: #fff; }
   .legenda-tag.tt { background: #111; color: #fff; border: 1px solid #444; }
 
-  .card-acoes { display: flex; align-items: flex-start; gap: 1px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; max-width: 90px; }
+  .card-acoes { display: flex; align-items: flex-start; gap: 4px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; max-width: 100px; }
   .btn-icone {
     background: none; border: none; color: #55557a;
-    font-size: 14px; cursor: pointer; padding: 5px 6px;
-    border-radius: 8px; transition: color .2s, background .2s;
+    font-size: 20px; cursor: pointer; padding: 8px;
+    border-radius: 10px; transition: color .2s, background .2s;
+    min-width: 40px; min-height: 40px;
+    display: flex; align-items: center; justify-content: center;
   }
   .btn-icone:hover { background: #20203a; }
 
@@ -159,15 +172,15 @@
     overflow: hidden;
   }
   .rede-chip {
-    display: flex; align-items: center; gap: 4px;
-    padding: 6px 10px; border: none; background: transparent;
-    cursor: pointer; transition: all .15s; color: #9090b8; font-size: 12px;
+    display: flex; align-items: center; gap: 5px;
+    padding: 11px 15px; border: none; background: transparent;
+    cursor: pointer; transition: all .15s; color: #9090b8; font-size: 14px;
   }
   .rede-chip.on { background: #22c55e; color: #fff; font-weight: 700; }
-  .rede-chip .check { font-size: 12px; }
+  .rede-chip .check { font-size: 14px; }
   .rede-data {
-    border: none; background: transparent; color: #6a6a90; font-size: 10.5px;
-    padding: 6px 8px 6px 0; cursor: pointer; border-left: 1px solid #2e2e4a;
+    border: none; background: transparent; color: #6a6a90; font-size: 13px;
+    padding: 11px 14px 11px 0; cursor: pointer; border-left: 1px solid #2e2e4a;
   }
   .rede-data:hover { color: #a78bfa; }
 
@@ -183,26 +196,26 @@
   }
   .rodape-btn {
     background: transparent; border: none; color: #8888b0;
-    font-size: 13px; padding: 6px 10px; cursor: pointer; border-radius: 8px;
+    font-size: 14px; padding: 10px 14px; cursor: pointer; border-radius: 10px;
   }
   .rodape-btn:hover { background: #18182c; color: #c4b5fd; }
   .painel-mais {
-    display: none; flex-direction: column; gap: 6px;
+    display: none; flex-direction: column; gap: 8px;
     margin-top: 10px; padding: 10px; background: #14142a;
     border: 1px solid #20203a; border-radius: 10px;
   }
   .painel-mais.aberto { display: flex; }
   .painel-mais button {
-    background: transparent; border: 1px solid #2a2a44; border-radius: 8px;
-    color: #9090b8; font-size: 13px; padding: 9px; cursor: pointer;
+    background: transparent; border: 1px solid #2a2a44; border-radius: 10px;
+    color: #9090b8; font-size: 14px; padding: 13px; cursor: pointer;
   }
   .painel-mais button:hover { background: #18182c; color: #c4b5fd; }
   .painel-mais .aviso-texto { margin: 2px 0 6px; }
 
   /* ESCOLHER ARQUIVO */
   .btn-arquivo {
-    width: 100%; padding: 10px; background: #0d0d17; border: 1px dashed #3a3a5a;
-    border-radius: 10px; color: #8888b0; font-size: 13px; cursor: pointer;
+    width: 100%; padding: 14px; background: #0d0d17; border: 1px dashed #3a3a5a;
+    border-radius: 10px; color: #8888b0; font-size: 14px; cursor: pointer;
     margin-bottom: 6px;
   }
   .preview-thumb-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
@@ -233,7 +246,7 @@
   .player-box video { width: 100%; max-height: 80vh; border-radius: 12px; background: #000; }
   .player-fechar {
     display: block; margin: 12px auto 0; background: #20203a; border: none;
-    border-radius: 8px; color: #cfcfe8; padding: 10px 18px; font-size: 13px; cursor: pointer;
+    border-radius: 10px; color: #cfcfe8; padding: 13px 22px; font-size: 14px; cursor: pointer;
   }
   .player-aviso {
     display: none; background: #2a1414; color: #f87171; border: 1px solid #4a1c1c;
@@ -302,9 +315,17 @@
       <div class="legendas-col">
         <label>Legenda do Instagram</label>
         <textarea id="inp-legenda-instagram" placeholder="Legenda que você vai usar ao postar no Instagram"></textarea>
+        <div class="legenda-acoes">
+          <button type="button" class="btn-legenda-acao" onclick="copiarLegenda('inp-legenda-instagram', this)">📋 Copiar</button>
+          <button type="button" class="btn-legenda-acao btn-legenda-limpar" onclick="limparLegenda('inp-legenda-instagram')">🗑️ Limpar</button>
+        </div>
 
         <label>Legenda do TikTok</label>
         <textarea id="inp-legenda-tiktok" placeholder="Legenda que você vai usar ao postar no TikTok"></textarea>
+        <div class="legenda-acoes">
+          <button type="button" class="btn-legenda-acao" onclick="copiarLegenda('inp-legenda-tiktok', this)">📋 Copiar</button>
+          <button type="button" class="btn-legenda-acao btn-legenda-limpar" onclick="limparLegenda('inp-legenda-tiktok')">🗑️ Limpar</button>
+        </div>
       </div>
     </div>
 
@@ -684,6 +705,27 @@ async function onEscolherVideo(input) {
   thumbAtual = thumb;
   document.getElementById('status-thumb').textContent = thumb ? '' : 'Não foi possível gerar a capa (o vídeo foi salvo normalmente).';
   atualizarThumbPreview(thumb);
+}
+
+async function copiarLegenda(id, btn) {
+  const campo = document.getElementById(id);
+  if (!campo.value) return;
+  const original = btn.textContent;
+  try {
+    await navigator.clipboard.writeText(campo.value);
+    btn.textContent = '✅ Copiado!';
+  } catch (e) {
+    campo.select();
+    document.execCommand('copy');
+    btn.textContent = '✅ Copiado!';
+  }
+  setTimeout(() => { btn.textContent = original; }, 1500);
+}
+
+function limparLegenda(id) {
+  const campo = document.getElementById(id);
+  campo.value = '';
+  campo.focus();
 }
 
 async function salvarVideo() {
