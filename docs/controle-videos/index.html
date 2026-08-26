@@ -239,6 +239,17 @@
     display: none; background: #2a1414; color: #f87171; border: 1px solid #4a1c1c;
     border-radius: 10px; padding: 14px; font-size: 13px; line-height: 1.5; text-align: center;
   }
+
+  /* AVISO DE ATUALIZAÇÃO */
+  .toast-atualizacao {
+    display: none; position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+    background: linear-gradient(135deg, #7c3aed, #9333ea); color: #fff;
+    font-size: 13px; font-weight: 600; padding: 11px 20px; border-radius: 30px;
+    box-shadow: 0 6px 20px rgba(124,58,237,.45); z-index: 300;
+    white-space: nowrap; animation: subirToast .25s ease;
+  }
+  .toast-atualizacao.show { display: block; }
+  @keyframes subirToast { from { transform: translate(-50%, 16px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
 </style>
 </head>
 <body>
@@ -328,6 +339,9 @@
     <button class="player-fechar" onclick="fecharPlayer()">✕ Fechar</button>
   </div>
 </div>
+
+<!-- AVISO DE ATUALIZAÇÃO DISPONÍVEL -->
+<div class="toast-atualizacao" id="toast-atualizacao">🔄 Nova versão disponível! Atualizando...</div>
 
 <script>
 // ============ IndexedDB (guarda o arquivo de vídeo em si) ============
@@ -852,7 +866,8 @@ if ('serviceWorker' in navigator) {
       if (!novo) return;
       novo.addEventListener('statechange', () => {
         if (novo.state === 'installed' && navigator.serviceWorker.controller) {
-          novo.postMessage('skipWaiting');
+          document.getElementById('toast-atualizacao').classList.add('show');
+          setTimeout(() => novo.postMessage('skipWaiting'), 1800);
         }
       });
     });
