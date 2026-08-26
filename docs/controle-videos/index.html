@@ -51,14 +51,7 @@
   .btn-add:hover { filter: brightness(1.1); }
   .btn-add:active { transform: scale(.98); }
 
-  /* BUSCA E FILTROS */
-  .busca-wrap { margin-bottom: 10px; }
-  .busca-wrap input {
-    width: 100%; background: #18182c; border: 1px solid #2a2a44;
-    border-radius: 10px; color: #e0e0e0; font-size: 13px;
-    padding: 10px 12px; outline: none;
-  }
-  .busca-wrap input:focus { border-color: #7c3aed; }
+  /* FILTROS */
   .filtros { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
   .chip-filtro {
     font-size: 11px; padding: 6px 11px; border-radius: 14px;
@@ -245,9 +238,6 @@
 
 <button class="btn-add" onclick="abrirModal()">＋ Novo vídeo</button>
 
-<div class="busca-wrap">
-  <input type="text" id="inp-busca" placeholder="🔎 Buscar por legenda...">
-</div>
 <div class="filtros">
   <span class="chip-filtro" data-filtro="todos">Todos</span>
   <span class="chip-filtro" data-filtro="faltando_instagram">Faltando Instagram</span>
@@ -463,9 +453,8 @@ function gerarThumbnail(file) {
   });
 }
 
-// ============ Estado da lista (busca/filtro) ============
+// ============ Estado da lista (filtro) ============
 let filtroAtual = 'todos';
-let termoBusca = '';
 
 function itemCompleto(v) { return v.instagram.postado && v.tiktok.postado; }
 
@@ -537,15 +526,12 @@ function renderLista() {
     return;
   }
 
-  const termo = termoBusca.trim().toLowerCase();
-  const filtrada = lista.filter(v => passaFiltro(v) && (!termo
-    || (v.legendaInstagram || '').toLowerCase().includes(termo)
-    || (v.legendaTiktok || '').toLowerCase().includes(termo)));
+  const filtrada = lista.filter(passaFiltro);
 
   if (filtrada.length === 0) {
     cont.innerHTML = `<div class="vazio">
       <div class="vazio-icone">🔎</div>
-      <p>Nenhum vídeo encontrado com essa busca/filtro.</p>
+      <p>Nenhum vídeo encontrado com esse filtro.</p>
     </div>`;
     return;
   }
@@ -553,10 +539,6 @@ function renderLista() {
   cont.innerHTML = filtrada.map(cardHtml).join('');
 }
 
-document.getElementById('inp-busca').addEventListener('input', e => {
-  termoBusca = e.target.value;
-  renderLista();
-});
 document.querySelectorAll('.chip-filtro').forEach(el => {
   el.addEventListener('click', () => {
     filtroAtual = el.dataset.filtro;
