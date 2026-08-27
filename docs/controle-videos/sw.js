@@ -1,10 +1,16 @@
 // Service Worker — busca sempre a versão nova quando tem internet
-const CACHE = 'controle-videos-v1';
+const CACHE = 'controle-videos-v2';
 const ARQUIVOS = ['./', './index.html', './manifest.json'];
 
+// Não chama self.skipWaiting() aqui: numa ATUALIZAÇÃO (já existe um SW
+// controlando a página), isso faria a página trocar de versão na hora,
+// sem dar tempo do aviso "Nova versão disponível" aparecer na tela.
+// A troca só acontece quando o index.html manda a mensagem 'skipWaiting'
+// (depois de mostrar o aviso). Numa instalação NOVA (primeira vez do app
+// no aparelho) isso não atrasa nada: sem SW anterior controlando a
+// página, o navegador ativa este sozinho, sem precisar de skipWaiting.
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARQUIVOS)));
-  self.skipWaiting();
 });
 
 self.addEventListener('message', e => {
