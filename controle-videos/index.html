@@ -161,15 +161,10 @@
   .legenda-tag.ig { background: linear-gradient(135deg,#f09433,#dc2743,#bc1888); color: #fff; }
   .legenda-tag.tt { background: #111; color: #fff; border: 1px solid #444; }
 
-  /* Ações rápidas coladas na legenda (copiar / apagar), direto na lista */
-  .legenda-mini-acoes { display: flex; gap: 2px; flex-shrink: 0; }
-  .btn-legenda-mini {
-    background: none; border: none; color: #6a6a90; cursor: pointer;
-    font-size: 15px; padding: 4px 6px; border-radius: 8px;
-    min-width: 30px; min-height: 30px;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .btn-legenda-mini:hover { background: #20203a; color: #c4b5fd; }
+  /* Ações da legenda direto na lista (variante 2: botões de linha inteira) */
+  .legenda-bloco { margin-bottom: 10px; }
+  .legenda-acoes-card { display: flex; gap: 8px; margin-top: 6px; }
+  .legenda-acoes-card .btn-legenda-acao { font-size: 13px; padding: 10px; min-width: 0; }
 
   .card-acoes { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   .btn-icone {
@@ -555,12 +550,14 @@ function chipRedeHtml(v, rede, label) {
 
 function legendaLinhaHtml(v, rede, label, tagClass) {
   const texto = rede === 'instagram' ? v.legendaInstagram : v.legendaTiktok;
-  return `<div class="legenda-linha">
-    <span class="legenda-tag ${tagClass}">${label}</span>
-    <span class="legenda-texto">${escapar(texto || '(sem legenda)')}</span>
-    <div class="legenda-mini-acoes">
-      <button type="button" class="btn-legenda-mini" data-action="copiar-legenda-card" data-id="${v.id}" data-rede="${rede}" title="Copiar legenda">📋</button>
-      <button type="button" class="btn-legenda-mini" data-action="apagar-legenda-card" data-id="${v.id}" data-rede="${rede}" title="Apagar legenda">🗑️</button>
+  return `<div class="legenda-bloco">
+    <div class="legenda-linha">
+      <span class="legenda-tag ${tagClass}">${label}</span>
+      <span class="legenda-texto">${escapar(texto || '(sem legenda)')}</span>
+    </div>
+    <div class="legenda-acoes-card">
+      <button type="button" class="btn-legenda-acao" data-action="copiar-legenda-card" data-id="${v.id}" data-rede="${rede}">📋 Copiar legenda</button>
+      <button type="button" class="btn-legenda-acao btn-legenda-limpar" data-action="apagar-legenda-card" data-id="${v.id}" data-rede="${rede}">🗑️ Apagar</button>
     </div>
   </div>`;
 }
