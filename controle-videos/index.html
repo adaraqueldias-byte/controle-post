@@ -39,11 +39,11 @@
   }
 
   .btn-add {
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    width: 100%; padding: 18px;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    width: 100%; padding: 14px;
     background: linear-gradient(135deg, #7c3aed, #9333ea);
-    border: none; border-radius: 14px;
-    color: #fff; font-size: 18px; font-weight: 700;
+    border: none; border-radius: 12px;
+    color: #fff; font-size: 16px; font-weight: 700;
     cursor: pointer; margin-bottom: 16px;
     transition: filter .2s, transform .1s;
     box-shadow: 0 4px 14px rgba(124,58,237,.3);
@@ -52,7 +52,8 @@
   .btn-add:active { transform: scale(.98); }
 
   /* FILTROS */
-  .filtros { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+  .filtros { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+  .filtros.filtros-redes { margin-bottom: 18px; }
   .chip-filtro {
     font-size: 16px; padding: 13px 20px; border-radius: 18px;
     border: 1px solid #2a2a44; background: #18182c; color: #8888b0;
@@ -148,6 +149,7 @@
     font-size: 14px; color: #d8d8ec; line-height: 1.35;
   }
   .legenda-linha span.legenda-texto {
+    flex: 1; min-width: 0;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
     overflow: hidden;
   }
@@ -158,6 +160,16 @@
   }
   .legenda-tag.ig { background: linear-gradient(135deg,#f09433,#dc2743,#bc1888); color: #fff; }
   .legenda-tag.tt { background: #111; color: #fff; border: 1px solid #444; }
+
+  /* Ações rápidas coladas na legenda (copiar / apagar), direto na lista */
+  .legenda-mini-acoes { display: flex; gap: 2px; flex-shrink: 0; }
+  .btn-legenda-mini {
+    background: none; border: none; color: #6a6a90; cursor: pointer;
+    font-size: 15px; padding: 4px 6px; border-radius: 8px;
+    min-width: 30px; min-height: 30px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .btn-legenda-mini:hover { background: #20203a; color: #c4b5fd; }
 
   .card-acoes { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   .btn-icone {
@@ -177,15 +189,15 @@
     overflow: hidden;
   }
   .rede-chip {
-    display: flex; align-items: center; gap: 6px;
-    padding: 14px 18px; border: none; background: transparent;
-    cursor: pointer; transition: all .15s; color: #9090b8; font-size: 17px;
+    display: flex; align-items: center; gap: 5px;
+    padding: 9px 13px; border: none; background: transparent;
+    cursor: pointer; transition: all .15s; color: #9090b8; font-size: 13px;
   }
   .rede-chip.on { background: #22c55e; color: #fff; font-weight: 700; }
-  .rede-chip .check { font-size: 17px; }
+  .rede-chip .check { font-size: 13px; }
   .rede-data {
-    border: none; background: transparent; color: #6a6a90; font-size: 15px;
-    padding: 14px 16px 14px 0; cursor: pointer; border-left: 1px solid #2e2e4a;
+    border: none; background: transparent; color: #6a6a90; font-size: 12px;
+    padding: 9px 11px 9px 0; cursor: pointer; border-left: 1px solid #2e2e4a;
   }
   .rede-data:hover { color: #a78bfa; }
 
@@ -279,9 +291,11 @@
 
 <div class="filtros">
   <span class="chip-filtro" data-filtro="todos">Todos</span>
-  <span class="chip-filtro" data-filtro="faltando_instagram">Faltando Instagram</span>
-  <span class="chip-filtro" data-filtro="faltando_tiktok">Faltando TikTok</span>
   <span class="chip-filtro" data-filtro="completos">Completos</span>
+</div>
+<div class="filtros filtros-redes">
+  <span class="chip-filtro" data-filtro="faltando_instagram" title="Faltando postar no Instagram">Instagram</span>
+  <span class="chip-filtro" data-filtro="faltando_tiktok" title="Faltando postar no TikTok">TikTok</span>
 </div>
 
 <div id="lista"></div>
@@ -539,6 +553,18 @@ function chipRedeHtml(v, rede, label) {
   </div>`;
 }
 
+function legendaLinhaHtml(v, rede, label, tagClass) {
+  const texto = rede === 'instagram' ? v.legendaInstagram : v.legendaTiktok;
+  return `<div class="legenda-linha">
+    <span class="legenda-tag ${tagClass}">${label}</span>
+    <span class="legenda-texto">${escapar(texto || '(sem legenda)')}</span>
+    <div class="legenda-mini-acoes">
+      <button type="button" class="btn-legenda-mini" data-action="copiar-legenda-card" data-id="${v.id}" data-rede="${rede}" title="Copiar legenda">📋</button>
+      <button type="button" class="btn-legenda-mini" data-action="apagar-legenda-card" data-id="${v.id}" data-rede="${rede}" title="Apagar legenda">🗑️</button>
+    </div>
+  </div>`;
+}
+
 function cardHtml(v) {
   const completo = itemCompleto(v);
   const foto = v.thumb
@@ -559,8 +585,8 @@ function cardHtml(v) {
     </div>
     <span class="card-data">${formatarData(v.dataCriacao)}</span>
     <div class="legendas-preview">
-      <div class="legenda-linha"><span class="legenda-tag ig">IG</span><span class="legenda-texto">${escapar(v.legendaInstagram || '(sem legenda)')}</span></div>
-      <div class="legenda-linha"><span class="legenda-tag tt">TikTok</span><span class="legenda-texto">${escapar(v.legendaTiktok || '(sem legenda)')}</span></div>
+      ${legendaLinhaHtml(v, 'instagram', 'IG', 'ig')}
+      ${legendaLinhaHtml(v, 'tiktok', 'TikTok', 'tt')}
     </div>
     <div class="canais">
       ${chipRedeHtml(v, 'instagram', 'Instagram')}
@@ -616,7 +642,35 @@ document.getElementById('lista').addEventListener('click', e => {
   else if (action === 'baixar') baixarVideo(id);
   else if (action === 'editar') abrirModal(id);
   else if (action === 'excluir') pedirExcluir(id);
+  else if (action === 'copiar-legenda-card') copiarLegendaCard(id, rede, alvo);
+  else if (action === 'apagar-legenda-card') apagarLegendaCard(id, rede);
 });
+
+async function copiarLegendaCard(id, rede, btn) {
+  const item = carregarLista().find(v => v.id === id);
+  if (!item) return;
+  const texto = rede === 'instagram' ? item.legendaInstagram : item.legendaTiktok;
+  if (!texto) return;
+  const original = btn.textContent;
+  try {
+    await navigator.clipboard.writeText(texto);
+  } catch (e) {
+    alert('Não consegui copiar automaticamente. Abra o vídeo pra editar e copie por lá.');
+    return;
+  }
+  btn.textContent = '✅';
+  setTimeout(() => { btn.textContent = original; }, 1200);
+}
+
+function apagarLegendaCard(id, rede) {
+  const lista = carregarLista();
+  const item = lista.find(v => v.id === id);
+  if (!item) return;
+  if (rede === 'instagram') item.legendaInstagram = '';
+  else item.legendaTiktok = '';
+  salvarLista(lista);
+  renderLista();
+}
 
 function toggleRede(id, rede) {
   const lista = carregarLista();
