@@ -143,28 +143,40 @@
 
   /* Embaixo: data e as duas legendas, ocupando a largura toda */
   .card-data { font-size: 11px; color: #5a5a92; display: block; margin-bottom: 8px; }
-  .legendas-preview { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
-  .legenda-linha {
-    display: flex; align-items: flex-start; gap: 6px;
-    font-size: 14px; color: #d8d8ec; line-height: 1.35;
-  }
-  .legenda-linha span.legenda-texto {
-    flex: 1; min-width: 0;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
+  .legendas-preview { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+  .legenda-bloco { }
+  .legenda-cabeca { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
   .legenda-tag {
     flex-shrink: 0; font-size: 10px; font-weight: 700; padding: 2px 7px;
     border-radius: 6px; text-transform: uppercase; letter-spacing: .3px;
-    margin-top: 1px;
   }
   .legenda-tag.ig { background: linear-gradient(135deg,#f09433,#dc2743,#bc1888); color: #fff; }
   .legenda-tag.tt { background: #111; color: #fff; border: 1px solid #444; }
+  .btn-legenda-abrir {
+    background: none; border: 1px solid #2a2a44; color: #9090b8;
+    font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 7px;
+    cursor: pointer;
+  }
+  .btn-legenda-abrir:hover { background: #20203a; }
 
-  /* Ações da legenda direto na lista (variante 2: botões de linha inteira) */
-  .legenda-bloco { margin-bottom: 10px; }
-  .legenda-acoes-card { display: flex; gap: 8px; margin-top: 6px; }
-  .legenda-acoes-card .btn-legenda-acao { font-size: 13px; padding: 10px; min-width: 0; }
+  .legenda-preview { cursor: pointer; }
+  .legenda-preview .legenda-texto {
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden; font-size: 14px; color: #d8d8ec; line-height: 1.35;
+  }
+
+  /* Editor expansível: abre embaixo da legenda, com Copiar/Salvar/Apagar */
+  .legenda-editor { display: none; margin-top: 6px; }
+  .legenda-bloco.aberto .legenda-preview { display: none; }
+  .legenda-bloco.aberto .legenda-editor { display: block; }
+  .legenda-editor-texto {
+    width: 100%; background: #0d0d17; border: 1px solid #7c3aed;
+    border-radius: 10px; color: #e0e0e0; font-size: 14px;
+    padding: 10px 12px; margin-bottom: 8px; outline: none;
+    font-family: inherit; resize: vertical; min-height: 90px; line-height: 1.4;
+  }
+  .legenda-acoes-card { display: flex; flex-wrap: wrap; gap: 8px; }
+  .legenda-acoes-card .btn-legenda-acao { font-size: 13px; padding: 10px; min-width: 90px; }
 
   .card-acoes { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   .btn-icone {
@@ -185,14 +197,14 @@
   }
   .rede-chip {
     display: flex; align-items: center; gap: 5px;
-    padding: 9px 13px; border: none; background: transparent;
-    cursor: pointer; transition: all .15s; color: #9090b8; font-size: 13px;
+    padding: 6px 12px; border: none; background: transparent;
+    cursor: pointer; transition: all .15s; color: #9090b8; font-size: 12px;
   }
   .rede-chip.on { background: #22c55e; color: #fff; font-weight: 700; }
-  .rede-chip .check { font-size: 13px; }
+  .rede-chip .check { font-size: 12px; }
   .rede-data {
-    border: none; background: transparent; color: #6a6a90; font-size: 12px;
-    padding: 9px 11px 9px 0; cursor: pointer; border-left: 1px solid #2e2e4a;
+    border: none; background: transparent; color: #6a6a90; font-size: 11px;
+    padding: 6px 9px 6px 0; cursor: pointer; border-left: 1px solid #2e2e4a;
   }
   .rede-data:hover { color: #a78bfa; }
 
@@ -548,16 +560,23 @@ function chipRedeHtml(v, rede, label) {
   </div>`;
 }
 
-function legendaLinhaHtml(v, rede, label, tagClass) {
+function legendaBlocoHtml(v, rede, label, tagClass) {
   const texto = rede === 'instagram' ? v.legendaInstagram : v.legendaTiktok;
   return `<div class="legenda-bloco">
-    <div class="legenda-linha">
+    <div class="legenda-cabeca">
       <span class="legenda-tag ${tagClass}">${label}</span>
+      <button type="button" class="btn-legenda-abrir" data-action="abrir-legenda-card" data-id="${v.id}" data-rede="${rede}">✏️ Abrir</button>
+    </div>
+    <div class="legenda-preview" data-action="abrir-legenda-card" data-id="${v.id}" data-rede="${rede}">
       <span class="legenda-texto">${escapar(texto || '(sem legenda)')}</span>
     </div>
-    <div class="legenda-acoes-card">
-      <button type="button" class="btn-legenda-acao" data-action="copiar-legenda-card" data-id="${v.id}" data-rede="${rede}">📋 Copiar legenda</button>
-      <button type="button" class="btn-legenda-acao btn-legenda-limpar" data-action="apagar-legenda-card" data-id="${v.id}" data-rede="${rede}">🗑️ Apagar</button>
+    <div class="legenda-editor">
+      <textarea class="legenda-editor-texto" data-id="${v.id}" data-rede="${rede}">${escapar(texto)}</textarea>
+      <div class="legenda-acoes-card">
+        <button type="button" class="btn-legenda-acao" data-action="copiar-legenda-editor" data-id="${v.id}" data-rede="${rede}">📋 Copiar</button>
+        <button type="button" class="btn-legenda-acao btn-legenda-salvar" data-action="salvar-legenda-editor" data-id="${v.id}" data-rede="${rede}">💾 Salvar</button>
+        <button type="button" class="btn-legenda-acao btn-legenda-limpar" data-action="apagar-legenda-editor" data-id="${v.id}" data-rede="${rede}">🗑️ Apagar</button>
+      </div>
     </div>
   </div>`;
 }
@@ -582,8 +601,8 @@ function cardHtml(v) {
     </div>
     <span class="card-data">${formatarData(v.dataCriacao)}</span>
     <div class="legendas-preview">
-      ${legendaLinhaHtml(v, 'instagram', 'IG', 'ig')}
-      ${legendaLinhaHtml(v, 'tiktok', 'TikTok', 'tt')}
+      ${legendaBlocoHtml(v, 'instagram', 'IG', 'ig')}
+      ${legendaBlocoHtml(v, 'tiktok', 'TikTok', 'tt')}
     </div>
     <div class="canais">
       ${chipRedeHtml(v, 'instagram', 'Instagram')}
@@ -639,27 +658,55 @@ document.getElementById('lista').addEventListener('click', e => {
   else if (action === 'baixar') baixarVideo(id);
   else if (action === 'editar') abrirModal(id);
   else if (action === 'excluir') pedirExcluir(id);
-  else if (action === 'copiar-legenda-card') copiarLegendaCard(id, rede, alvo);
-  else if (action === 'apagar-legenda-card') apagarLegendaCard(id, rede);
+  else if (action === 'abrir-legenda-card') abrirLegendaCard(alvo);
+  else if (action === 'copiar-legenda-editor') copiarLegendaEditor(alvo);
+  else if (action === 'salvar-legenda-editor') salvarLegendaEditor(id, rede, alvo);
+  else if (action === 'apagar-legenda-editor') apagarLegendaEditor(id, rede, alvo);
 });
 
-async function copiarLegendaCard(id, rede, btn) {
-  const item = carregarLista().find(v => v.id === id);
-  if (!item) return;
-  const texto = rede === 'instagram' ? item.legendaInstagram : item.legendaTiktok;
-  if (!texto) return;
+// Abre/fecha o editor da legenda direto no card, sem precisar do modal do vídeo.
+// Pode ser chamado tanto pelo botão "Abrir" quanto tocando na própria prévia da
+// legenda — por isso sempre busca o botão de verdade dentro do bloco, em vez de
+// presumir que "el" é o botão (senão sobrescreveria o texto da prévia).
+function abrirLegendaCard(el) {
+  const bloco = el.closest('.legenda-bloco');
+  const btnAbrir = bloco.querySelector('.btn-legenda-abrir');
+  const aberto = bloco.classList.toggle('aberto');
+  btnAbrir.textContent = aberto ? '✖ Fechar' : '✏️ Abrir';
+  if (aberto) {
+    const textarea = bloco.querySelector('.legenda-editor-texto');
+    textarea.focus();
+  }
+}
+
+async function copiarLegendaEditor(btn) {
+  const bloco = btn.closest('.legenda-bloco');
+  const textarea = bloco.querySelector('.legenda-editor-texto');
+  if (!textarea.value) return;
   const original = btn.textContent;
   try {
-    await navigator.clipboard.writeText(texto);
+    await navigator.clipboard.writeText(textarea.value);
   } catch (e) {
-    alert('Não consegui copiar automaticamente. Abra o vídeo pra editar e copie por lá.');
-    return;
+    textarea.select();
+    document.execCommand('copy');
   }
-  btn.textContent = '✅';
+  btn.textContent = '✅ Copiado!';
   setTimeout(() => { btn.textContent = original; }, 1200);
 }
 
-function apagarLegendaCard(id, rede) {
+function salvarLegendaEditor(id, rede, btn) {
+  const bloco = btn.closest('.legenda-bloco');
+  const textarea = bloco.querySelector('.legenda-editor-texto');
+  const lista = carregarLista();
+  const item = lista.find(v => v.id === id);
+  if (!item) return;
+  if (rede === 'instagram') item.legendaInstagram = textarea.value.trim();
+  else item.legendaTiktok = textarea.value.trim();
+  salvarLista(lista);
+  renderLista();
+}
+
+function apagarLegendaEditor(id, rede) {
   const lista = carregarLista();
   const item = lista.find(v => v.id === id);
   if (!item) return;
