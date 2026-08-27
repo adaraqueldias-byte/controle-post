@@ -39,12 +39,12 @@
   }
 
   .btn-add {
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-    width: 100%; padding: 14px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 18px;
     background: linear-gradient(135deg, #7c3aed, #9333ea);
-    border: none; border-radius: 12px;
-    color: #fff; font-size: 15px; font-weight: 700;
-    cursor: pointer; margin-bottom: 14px;
+    border: none; border-radius: 14px;
+    color: #fff; font-size: 18px; font-weight: 700;
+    cursor: pointer; margin-bottom: 16px;
     transition: filter .2s, transform .1s;
     box-shadow: 0 4px 14px rgba(124,58,237,.3);
   }
@@ -52,9 +52,9 @@
   .btn-add:active { transform: scale(.98); }
 
   /* FILTROS */
-  .filtros { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .filtros { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
   .chip-filtro {
-    font-size: 13px; padding: 10px 16px; border-radius: 16px;
+    font-size: 16px; padding: 13px 20px; border-radius: 18px;
     border: 1px solid #2a2a44; background: #18182c; color: #8888b0;
     cursor: pointer; user-select: none; transition: all .15s;
   }
@@ -75,38 +75,39 @@
     max-height: 90vh; overflow-y: auto;
   }
   @keyframes pop { from { transform: scale(.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  .modal h3 { font-size: 18px; margin-bottom: 16px; color: #fff; }
-  .modal label { display: block; font-size: 13px; color: #8888b0; margin-bottom: 6px; }
+  .modal h3 { font-size: 20px; margin-bottom: 16px; color: #fff; }
+  .modal label { display: block; font-size: 14px; color: #8888b0; margin-bottom: 7px; }
   .modal input, .modal textarea {
     width: 100%; background: #0d0d17; border: 1px solid #2a2a44;
-    border-radius: 10px; color: #e0e0e0; font-size: 15px;
-    padding: 12px 14px; margin-bottom: 8px; outline: none;
+    border-radius: 10px; color: #e0e0e0; font-size: 16px;
+    padding: 14px 16px; margin-bottom: 10px; outline: none;
     font-family: inherit;
   }
-  .modal textarea { resize: vertical; min-height: 140px; line-height: 1.5; }
+  .modal textarea { resize: vertical; min-height: 160px; line-height: 1.5; }
   .modal input:focus, .modal textarea:focus { border-color: #7c3aed; }
 
-  /* AÇÕES DA LEGENDA (copiar / limpar) */
-  .legenda-acoes { display: flex; gap: 8px; margin-bottom: 14px; }
+  /* AÇÕES DA LEGENDA (copiar / limpar / salvar) */
+  .legenda-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
   .btn-legenda-acao {
-    flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px;
-    padding: 10px; background: #0d0d17; border: 1px solid #2a2a44;
-    border-radius: 9px; color: #a0a0c0; font-size: 13px; font-weight: 600;
+    flex: 1; min-width: 96px; display: flex; align-items: center; justify-content: center; gap: 5px;
+    padding: 13px 10px; background: #0d0d17; border: 1px solid #2a2a44;
+    border-radius: 10px; color: #a0a0c0; font-size: 15px; font-weight: 600;
     cursor: pointer; transition: background .2s;
   }
   .btn-legenda-acao:hover { background: #20203a; }
   .btn-legenda-acao.btn-legenda-limpar { color: #f2a0a0; }
+  .btn-legenda-acao.btn-legenda-salvar { color: #86e0a0; }
 
   .modal-btns { display: flex; gap: 10px; margin-top: 4px; }
   .btn-salvar {
-    flex: 1; padding: 15px; background: linear-gradient(135deg,#7c3aed,#9333ea);
-    border: none; border-radius: 12px; color: #fff;
-    font-size: 16px; font-weight: 700; cursor: pointer;
+    flex: 1; padding: 17px; background: linear-gradient(135deg,#7c3aed,#9333ea);
+    border: none; border-radius: 14px; color: #fff;
+    font-size: 18px; font-weight: 700; cursor: pointer;
   }
   .btn-salvar:disabled { opacity: .6; cursor: not-allowed; }
   .btn-cancelar {
-    flex: 1; padding: 15px; background: #20203a; border: none;
-    border-radius: 12px; color: #a0a0c0; font-size: 16px; cursor: pointer;
+    flex: 1; padding: 17px; background: #20203a; border: none;
+    border-radius: 14px; color: #a0a0c0; font-size: 18px; cursor: pointer;
   }
 
   .status-txt { font-size: 11px; color: #a78bfa; margin: -8px 0 12px; }
@@ -141,46 +142,50 @@
     font-size: 20px; background: #0d0d17; color: #3a3a5a;
   }
   .prod-info-col { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
-  .card-data { font-size: 10px; color: #5a5a92; }
+  .card-data { font-size: 11px; color: #5a5a92; }
   .legenda-linha {
-    display: flex; align-items: baseline; gap: 6px;
-    font-size: 13px; color: #d8d8ec;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    display: flex; align-items: flex-start; gap: 6px;
+    font-size: 14px; color: #d8d8ec; line-height: 1.35;
+  }
+  .legenda-linha span.legenda-texto {
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   .legenda-tag {
-    flex-shrink: 0; font-size: 9.5px; font-weight: 700; padding: 1px 6px;
+    flex-shrink: 0; font-size: 10px; font-weight: 700; padding: 2px 7px;
     border-radius: 6px; text-transform: uppercase; letter-spacing: .3px;
+    margin-top: 1px;
   }
   .legenda-tag.ig { background: linear-gradient(135deg,#f09433,#dc2743,#bc1888); color: #fff; }
   .legenda-tag.tt { background: #111; color: #fff; border: 1px solid #444; }
 
-  .card-acoes { display: flex; align-items: flex-start; gap: 4px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; max-width: 100px; }
+  .card-acoes { display: flex; align-items: flex-start; gap: 6px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; max-width: 116px; }
   .btn-icone {
     background: none; border: none; color: #55557a;
-    font-size: 20px; cursor: pointer; padding: 8px;
-    border-radius: 10px; transition: color .2s, background .2s;
-    min-width: 40px; min-height: 40px;
+    font-size: 26px; cursor: pointer; padding: 10px;
+    border-radius: 12px; transition: color .2s, background .2s;
+    min-width: 52px; min-height: 52px;
     display: flex; align-items: center; justify-content: center;
   }
   .btn-icone:hover { background: #20203a; }
 
   /* CHIPS DE REDE */
-  .canais { display: flex; gap: 8px; flex-wrap: wrap; }
+  .canais { display: flex; gap: 10px; flex-wrap: wrap; }
   .rede-chip-wrap {
     display: flex; align-items: center; gap: 4px;
-    background: #1a1a2e; border: 1px solid #2e2e4a; border-radius: 11px;
+    background: #1a1a2e; border: 1px solid #2e2e4a; border-radius: 13px;
     overflow: hidden;
   }
   .rede-chip {
-    display: flex; align-items: center; gap: 5px;
-    padding: 11px 15px; border: none; background: transparent;
-    cursor: pointer; transition: all .15s; color: #9090b8; font-size: 14px;
+    display: flex; align-items: center; gap: 6px;
+    padding: 14px 18px; border: none; background: transparent;
+    cursor: pointer; transition: all .15s; color: #9090b8; font-size: 17px;
   }
   .rede-chip.on { background: #22c55e; color: #fff; font-weight: 700; }
-  .rede-chip .check { font-size: 14px; }
+  .rede-chip .check { font-size: 17px; }
   .rede-data {
-    border: none; background: transparent; color: #6a6a90; font-size: 13px;
-    padding: 11px 14px 11px 0; cursor: pointer; border-left: 1px solid #2e2e4a;
+    border: none; background: transparent; color: #6a6a90; font-size: 15px;
+    padding: 14px 16px 14px 0; cursor: pointer; border-left: 1px solid #2e2e4a;
   }
   .rede-data:hover { color: #a78bfa; }
 
@@ -196,26 +201,26 @@
   }
   .rodape-btn {
     background: transparent; border: none; color: #8888b0;
-    font-size: 14px; padding: 10px 14px; cursor: pointer; border-radius: 10px;
+    font-size: 16px; padding: 13px 18px; cursor: pointer; border-radius: 12px;
   }
   .rodape-btn:hover { background: #18182c; color: #c4b5fd; }
   .painel-mais {
-    display: none; flex-direction: column; gap: 8px;
-    margin-top: 10px; padding: 10px; background: #14142a;
-    border: 1px solid #20203a; border-radius: 10px;
+    display: none; flex-direction: column; gap: 10px;
+    margin-top: 10px; padding: 12px; background: #14142a;
+    border: 1px solid #20203a; border-radius: 12px;
   }
   .painel-mais.aberto { display: flex; }
   .painel-mais button {
-    background: transparent; border: 1px solid #2a2a44; border-radius: 10px;
-    color: #9090b8; font-size: 14px; padding: 13px; cursor: pointer;
+    background: transparent; border: 1px solid #2a2a44; border-radius: 12px;
+    color: #9090b8; font-size: 16px; padding: 16px; cursor: pointer;
   }
   .painel-mais button:hover { background: #18182c; color: #c4b5fd; }
   .painel-mais .aviso-texto { margin: 2px 0 6px; }
 
   /* ESCOLHER ARQUIVO */
   .btn-arquivo {
-    width: 100%; padding: 14px; background: #0d0d17; border: 1px dashed #3a3a5a;
-    border-radius: 10px; color: #8888b0; font-size: 14px; cursor: pointer;
+    width: 100%; padding: 17px; background: #0d0d17; border: 1px dashed #3a3a5a;
+    border-radius: 12px; color: #8888b0; font-size: 16px; cursor: pointer;
     margin-bottom: 6px;
   }
   .preview-thumb-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
@@ -246,7 +251,7 @@
   .player-box video { width: 100%; max-height: 80vh; border-radius: 12px; background: #000; }
   .player-fechar {
     display: block; margin: 12px auto 0; background: #20203a; border: none;
-    border-radius: 10px; color: #cfcfe8; padding: 13px 22px; font-size: 14px; cursor: pointer;
+    border-radius: 12px; color: #cfcfe8; padding: 16px 26px; font-size: 16px; cursor: pointer;
   }
   .player-aviso {
     display: none; background: #2a1414; color: #f87171; border: 1px solid #4a1c1c;
@@ -318,6 +323,7 @@
         <div class="legenda-acoes">
           <button type="button" class="btn-legenda-acao" onclick="copiarLegenda('inp-legenda-instagram', this)">📋 Copiar</button>
           <button type="button" class="btn-legenda-acao btn-legenda-limpar" onclick="limparLegenda('inp-legenda-instagram')">🗑️ Limpar</button>
+          <button type="button" class="btn-legenda-acao btn-legenda-salvar" onclick="salvarLegendaIndividual('inp-legenda-instagram','legendaInstagram', this)">💾 Salvar</button>
         </div>
 
         <label>Legenda do TikTok</label>
@@ -325,6 +331,7 @@
         <div class="legenda-acoes">
           <button type="button" class="btn-legenda-acao" onclick="copiarLegenda('inp-legenda-tiktok', this)">📋 Copiar</button>
           <button type="button" class="btn-legenda-acao btn-legenda-limpar" onclick="limparLegenda('inp-legenda-tiktok')">🗑️ Limpar</button>
+          <button type="button" class="btn-legenda-acao btn-legenda-salvar" onclick="salvarLegendaIndividual('inp-legenda-tiktok','legendaTiktok', this)">💾 Salvar</button>
         </div>
       </div>
     </div>
@@ -544,8 +551,8 @@ function cardHtml(v) {
         ${foto}
         <div class="prod-info-col">
           <span class="card-data">${formatarData(v.dataCriacao)}</span>
-          <div class="legenda-linha"><span class="legenda-tag ig">IG</span>${escapar(v.legendaInstagram || '(sem legenda)')}</div>
-          <div class="legenda-linha"><span class="legenda-tag tt">TikTok</span>${escapar(v.legendaTiktok || '(sem legenda)')}</div>
+          <div class="legenda-linha"><span class="legenda-tag ig">IG</span><span class="legenda-texto">${escapar(v.legendaInstagram || '(sem legenda)')}</span></div>
+          <div class="legenda-linha"><span class="legenda-tag tt">TikTok</span><span class="legenda-texto">${escapar(v.legendaTiktok || '(sem legenda)')}</span></div>
         </div>
       </div>
       <div class="card-acoes">
@@ -726,6 +733,25 @@ function limparLegenda(id) {
   const campo = document.getElementById(id);
   campo.value = '';
   campo.focus();
+}
+
+// Salva só essa legenda no vídeo já existente, sem precisar tocar em
+// "Salvar" lá embaixo (que salvaria o modal inteiro, inclusive um vídeo
+// novo escolhido). Só funciona editando um vídeo que já existe.
+function salvarLegendaIndividual(campoId, chave, btn) {
+  if (!editandoId) {
+    alert('Adicione o vídeo primeiro (toque em "Adicionar" aqui embaixo) para poder salvar a legenda separadamente depois.');
+    return;
+  }
+  const lista = carregarLista();
+  const item = lista.find(v => v.id === editandoId);
+  if (!item) return;
+  item[chave] = document.getElementById(campoId).value.trim();
+  salvarLista(lista);
+  renderLista();
+  const original = btn.textContent;
+  btn.textContent = '✅ Salvo!';
+  setTimeout(() => { btn.textContent = original; }, 1500);
 }
 
 async function salvarVideo() {
