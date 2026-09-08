@@ -354,6 +354,10 @@
   .rel-folha th.loja, .rel-folha th.prod, .rel-folha td.loja, .rel-folha td.prod { text-align: left; }
   .rel-folha td.loja { font-weight: bold; white-space: nowrap; }
   .rel-folha td.prod { min-width: 120px; }
+  .rel-folha th.link, .rel-folha td.link { text-align: left; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rel-folha td.link a { color: #6d28d9; font-weight: 600; text-decoration: none; }
+  .rel-folha td.link a:hover { text-decoration: underline; }
+  .rel-folha .sem-link { color: #bbb; }
   .rel-folha .cel { color: #16a34a; font-weight: bold; font-size: 13px; }
   .rel-folha .cel-ok { color: #16a34a; font-weight: bold; font-size: 14px; }
   .rel-folha .cel-falta { color: #dc2626; font-weight: bold; font-size: 14px; background: #fee2e2; }
@@ -417,6 +421,7 @@
   <button onclick="salvarNaNuvem()">☁️ Salvar na nuvem</button>
   <button onclick="carregarDaNuvem()">⬇️ Carregar da nuvem</button>
   <button onclick="relatorioSemana()">Relatório da semana</button>
+  <button onclick="registroPosts()">📋 Registro de posts (Data/Produto/Link)</button>
   <button onclick="verRelatoriosSalvos()">Relatórios salvos</button>
   <button onclick="document.getElementById('inp-restaurar').click()">Restaurar backup (arquivo)</button>
   <button onclick="configurarNuvem()">⚙️ Configurar nuvem</button>
@@ -1022,6 +1027,50 @@ function relatorioSemana() {
       <tbody>${linhas}</tbody>
     </table>`;
   abrirRelatorio('Relatório da semana — ' + periodo, corpo);
+}
+
+// Registro de posts: tabela Data / Produto / Link, juntando todos os dias já salvos
+function registroPosts() {
+  const chaves = Object.keys(localStorage).filter(k => k.startsWith('post_')).sort().reverse();
+  const linhas = [];
+  chaves.forEach(k => {
+    const [ano, mes, dia] = k.slice(5).split('-').map(Number);
+    const ts = new Date(ano, mes - 1, dia).getTime();
+    const dataFmt = String(dia).padStart(2, '0') + '/' + String(mes).padStart(2, '0') + '/' + ano;
+    let dados;
+    try { dados = JSON.parse(localStorage.getItem(k) || '[]'); } catch (e) { dados = []; }
+    dados.forEach(p => linhas.push({ dataFmt, ts, nome: p.nome, loja: p.loja, link: p.link || '' }));
+  });
+  if (linhas.length === 0) { alert('Nenhum produto registrado ainda.'); return; }
+  linhas.sort((a, b) => b.ts - a.ts);
+
+  const corpoLinhas = linhas.map(l => `
+    <tr>
+      <td class="data">${l.dataFmt}</td>
+      <td class="prod">
+        <span class="loja-badge loja-${l.loja}" style="font-size:9px;padding:2px 7px;margin-right:5px">${LOJAS[l.loja] || l.loja}</span>
+        ${escapar(l.nome)}
+      </td>
+      <td class="link">${l.link ? `<a href="${escapar(l.link)}" target="_blank" rel="noopener noreferrer" title="${escapar(l.link)}">${escapar(l.link)}</a>` : '<span class="sem-link">—</span>'}</td>
+    </tr>`).join('');
+
+  const corpo = `<h1>Registro de posts</h1>
+    <div class="rsub">${linhas.length} produtos registrados</div>
+    <div class="no-print" style="margin-bottom:10px">
+      <input type="text" id="registro-busca" placeholder="🔎 Buscar produto..." oninput="filtrarRegistro()" style="width:100%;padding:8px 10px;border:1px solid #ccc;border-radius:8px;font-size:13px;box-sizing:border-box">
+    </div>
+    <table id="tab-registro">
+      <thead><tr><th class="data">Data</th><th class="prod">Produto</th><th class="link">Link</th></tr></thead>
+      <tbody>${corpoLinhas}</tbody>
+    </table>`;
+  abrirRelatorio('Registro de posts', corpo);
+}
+
+function filtrarRegistro() {
+  const termo = (document.getElementById('registro-busca').value || '').toLowerCase();
+  document.querySelectorAll('#tab-registro tbody tr').forEach(tr => {
+    tr.style.display = tr.textContent.toLowerCase().includes(termo) ? '' : 'none';
+  });
 }
 
 // Abre o relatório numa tela dentro do app (com botões Salvar aqui / PDF)
