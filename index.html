@@ -439,6 +439,8 @@
       <option value="magalu">Magalu</option>
       <option value="shein">Shein</option>
     </select>
+    <label>Link do produto (opcional)</label>
+    <input type="url" id="inp-link" placeholder="https://..." autocomplete="off">
     <label>Foto do produto (opcional)</label>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
       <img id="preview-foto" src="" alt="" style="display:none;width:60px;height:60px;border-radius:8px;object-fit:cover;border:1px solid #2a2a44">
@@ -735,6 +737,7 @@ function renderDia() {
           </div>
         </div>
         <div class="card-acoes">
+          ${p.link ? `<a class="btn-icone" href="${escapar(p.link)}" target="_blank" rel="noopener noreferrer" title="Abrir link">🔗</a>` : ''}
           <button class="btn-icone btn-editar" onclick="abrirModal('${k}',${i})" title="Editar">✏️</button>
           <button class="btn-icone btn-excluir" onclick="excluir('${k}',${i})" title="Excluir">🗑️</button>
         </div>
@@ -867,6 +870,7 @@ function abrirModal(k, i) {
     const dados = carregar(k);
     document.getElementById('inp-nome').value = dados[i].nome;
     document.getElementById('inp-loja').value = dados[i].loja;
+    document.getElementById('inp-link').value = dados[i].link || '';
     if (dados[i].foto) {
       fotoBase64 = dados[i].foto;
       const img = document.getElementById('preview-foto');
@@ -879,6 +883,7 @@ function abrirModal(k, i) {
   } else {
     document.getElementById('inp-nome').value = '';
     document.getElementById('inp-loja').value = '';
+    document.getElementById('inp-link').value = '';
     document.getElementById('modal-titulo').textContent = 'Novo produto';
     document.getElementById('btn-salvar').textContent = 'Adicionar';
   }
@@ -894,6 +899,7 @@ function fecharModal() {
 function salvarProduto() {
   const nome = document.getElementById('inp-nome').value.trim();
   const loja = document.getElementById('inp-loja').value;
+  const link = document.getElementById('inp-link').value.trim();
   if (!nome) { document.getElementById('inp-nome').focus(); return; }
   if (!loja) { document.getElementById('inp-loja').focus(); return; }
 
@@ -902,10 +908,11 @@ function salvarProduto() {
   if (editandoIndex !== null) {
     dados[editandoIndex].nome = nome;
     dados[editandoIndex].loja = loja;
+    dados[editandoIndex].link = link || undefined;
     delete dados[editandoIndex].usar;
     if (fotoAlterada) dados[editandoIndex].foto = fotoBase64 || undefined;
   } else {
-    dados.push({ nome, loja, foto: fotoBase64 || undefined, canais: {} });
+    dados.push({ nome, loja, link: link || undefined, foto: fotoBase64 || undefined, canais: {} });
   }
   salvar(k, dados);
   fecharModal();
