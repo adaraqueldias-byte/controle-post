@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Controle Financeiro</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#7c3aed">
+<meta name="theme-color" content="#2563eb">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -26,7 +26,7 @@
     text-align: center;
     font-size: 13px;
     font-weight: 700;
-    color: #a78bfa;
+    color: #60a5fa;
     letter-spacing: 1px;
     text-transform: uppercase;
     margin-bottom: 12px;
@@ -42,7 +42,7 @@
     transition: all .15s;
   }
   .perfil-tab.on {
-    background: linear-gradient(135deg, #7c3aed, #9333ea);
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
     border-color: transparent; color: #fff;
   }
   .perfil-tab .lapis { font-size: 11px; opacity: .7; margin-left: 4px; }
@@ -81,7 +81,7 @@
     border-radius: 10px; color: #8888b0; font-size: 13px; font-weight: 700;
     cursor: pointer; transition: all .15s;
   }
-  .view-toggle button.on { background: #20203a; color: #c4b5fd; border-color: #7c3aed; }
+  .view-toggle button.on { background: #20203a; color: #93c5fd; border-color: #2563eb; }
 
   /* RESUMO */
   .resumo-mes {
@@ -94,7 +94,7 @@
   .resumo-mes .warn { color: #f59e0b; font-weight: 700; }
   .resumo-mes .copiar {
     background: none; border: 1px solid #3a3a5a; border-radius: 8px;
-    color: #a78bfa; font-size: 11px; padding: 5px 9px; cursor: pointer;
+    color: #60a5fa; font-size: 11px; padding: 5px 9px; cursor: pointer;
   }
 
   /* CARDS DE GRUPO */
@@ -125,7 +125,7 @@
     background: #0d0d17; border: 1px solid #2a2a44; border-radius: 8px;
     color: #e0e0e0; font-size: 13px; padding: 8px 10px; outline: none;
   }
-  .item-campos input:focus { border-color: #7c3aed; }
+  .item-campos input:focus { border-color: #2563eb; }
   .inp-valor { flex: 1; min-width: 0; font-weight: 700; }
   .inp-nota { width: 90px; flex-shrink: 0; }
 
@@ -149,17 +149,17 @@
     text-align: right; font-size: 12px; color: #7878a8; margin-top: 10px;
     padding-top: 8px; border-top: 1px solid #22223e;
   }
-  .grupo-subtotal b { color: #c4b5fd; }
+  .grupo-subtotal b { color: #93c5fd; }
 
   .btn-add {
     display: flex; align-items: center; justify-content: center; gap: 6px;
     width: 100%; padding: 10px;
-    background: linear-gradient(135deg, #7c3aed, #9333ea);
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
     border: none; border-radius: 10px;
     color: #fff; font-size: 13px; font-weight: 700;
     cursor: pointer; margin-bottom: 14px;
     transition: filter .2s, transform .1s;
-    box-shadow: 0 4px 14px rgba(124,58,237,.3);
+    box-shadow: 0 4px 14px rgba(37,99,235,.35);
   }
   .btn-add:hover { filter: brightness(1.1); }
   .btn-add:active { transform: scale(.98); }
@@ -176,7 +176,7 @@
     width: 110px; background: #14142a; border: 1px solid #22223e; border-radius: 8px;
     color: #6ee7a7; font-weight: 700; font-size: 13px; padding: 8px 10px; outline: none; flex-shrink: 0;
   }
-  .conta-row input:focus { border-color: #7c3aed; }
+  .conta-row input:focus { border-color: #2563eb; }
   .conta-total { text-align: right; font-size: 13px; color: #9090b8; margin-top: 4px; }
   .conta-total b { color: #6ee7a7; font-size: 15px; }
 
@@ -193,14 +193,14 @@
   table.tabela-anual th, table.tabela-anual td {
     padding: 7px 8px; text-align: center; border-bottom: 1px solid #22223e; border-right: 1px solid #22223e;
   }
-  table.tabela-anual th { background: #20203a; color: #a78bfa; font-size: 10px; text-transform: uppercase; }
+  table.tabela-anual th { background: #20203a; color: #60a5fa; font-size: 10px; text-transform: uppercase; }
   table.tabela-anual td.col-nome, table.tabela-anual th.col-nome {
     text-align: left; position: sticky; left: 0; background: #18182c; z-index: 1;
     max-width: 110px; overflow: hidden; text-overflow: ellipsis; font-weight: 600;
   }
   table.tabela-anual th.col-nome { background: #20203a; }
-  table.tabela-anual tr.linha-subtotal td { background: #1c1438; font-weight: 700; color: #c4b5fd; }
-  table.tabela-anual tr.linha-subtotal td.col-nome { background: #1c1438; }
+  table.tabela-anual tr.linha-subtotal td { background: #142238; font-weight: 700; color: #93c5fd; }
+  table.tabela-anual tr.linha-subtotal td.col-nome { background: #142238; }
   .cel-pago { color: #6ee7a7; }
   .cel-pendente { color: #fbbf24; }
   .cel-na { color: #4a4a6a; }
@@ -211,7 +211,7 @@
   }
   .anual-total .linha { display: flex; justify-content: space-between; padding: 4px 0; }
   .anual-total b { color: #fff; }
-  .anual-total .total-geral b { color: #c4b5fd; font-size: 17px; }
+  .anual-total .total-geral b { color: #93c5fd; font-size: 17px; }
 
   /* RODAPÉ */
   .rodape {
@@ -222,7 +222,7 @@
     background: transparent; border: none; color: #8888b0;
     font-size: 13px; padding: 6px 10px; cursor: pointer; border-radius: 8px;
   }
-  .rodape-btn:hover { background: #18182c; color: #c4b5fd; }
+  .rodape-btn:hover { background: #18182c; color: #93c5fd; }
 </style>
 </head>
 <body>
