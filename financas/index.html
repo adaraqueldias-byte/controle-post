@@ -92,6 +92,8 @@
   .resumo-mes b { color: #fff; font-size: 15px; }
   .resumo-mes .ok { color: #22c55e; font-weight: 700; }
   .resumo-mes .warn { color: #f59e0b; font-weight: 700; }
+  .resumo-mes b.ok { color: #22c55e; }
+  .resumo-mes b.neg { color: #f87171; }
   .resumo-mes .copiar {
     background: none; border: 1px solid #3a3a5a; border-radius: 8px;
     color: #60a5fa; font-size: 11px; padding: 5px 9px; cursor: pointer;
@@ -107,6 +109,18 @@
     margin-bottom: 10px; gap: 8px;
   }
   .grupo-nome { font-size: 15px; font-weight: 700; color: #fff; cursor: pointer; }
+  .card.receita { border-color: #16a34a; }
+  .tag-receita {
+    font-size: 10px; font-weight: 700; color: #6ee7a7; background: #123321;
+    border: 1px solid #16a34a; padding: 2px 7px; border-radius: 8px; margin-left: 6px;
+    text-transform: uppercase; letter-spacing: .4px;
+  }
+  .btn-add.receita {
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+    box-shadow: 0 4px 14px rgba(22,163,74,.35);
+  }
+  .grupos-add-row { display: flex; gap: 8px; }
+  .grupos-add-row .btn-add { margin-bottom: 14px; }
   .btn-icone {
     background: none; border: none; color: #55557a;
     font-size: 15px; cursor: pointer; padding: 5px 7px;
@@ -211,7 +225,11 @@
   }
   .anual-total .linha { display: flex; justify-content: space-between; padding: 4px 0; }
   .anual-total b { color: #fff; }
+  .anual-total b.ok { color: #22c55e; }
+  .anual-total b.neg { color: #f87171; }
   .anual-total .total-geral b { color: #93c5fd; font-size: 17px; }
+  .anual-total .total-geral b.ok { color: #22c55e; }
+  .anual-total .total-geral b.neg { color: #f87171; }
 
   /* RODAPÉ */
   .rodape {
@@ -376,38 +394,56 @@ function mudarPeriodo(delta) {
 }
 
 // ============ VISÃO MENSAL ============
+function tipoGrupo(g) { return g.tipo === 'receita' ? 'receita' : 'despesa'; }
+
 function totaisMes(dados, ano, mes) {
   const k = mesChave(ano, mes);
-  let total = 0, pago = 0, pendente = 0;
-  dados.grupos.forEach(g => g.itens.forEach(it => {
-    const c = it.meses && it.meses[k];
-    if (!c || c.status === 'na') return;
-    const v = Number(c.valor) || 0;
-    total += v;
-    if (c.status === 'pago') pago += v;
-    else pendente += v;
-  }));
-  return { total, pago, pendente };
+  let despesaTotal = 0, pago = 0, pendente = 0, receitaTotal = 0;
+  dados.grupos.forEach(g => {
+    const tipo = tipoGrupo(g);
+    g.itens.forEach(it => {
+      const c = it.meses && it.meses[k];
+      if (!c || c.status === 'na') return;
+      const v = Number(c.valor) || 0;
+      if (tipo === 'receita') {
+        receitaTotal += v;
+      } else {
+        despesaTotal += v;
+        if (c.status === 'pago') pago += v;
+        else pendente += v;
+      }
+    });
+  });
+  return { despesaTotal, pago, pendente, receitaTotal, saldo: receitaTotal - despesaTotal };
 }
+
+const ROTULOS_STATUS = {
+  despesa: { pago: '✓ Pago', pendente: '? Pendente', na: '✕ N/A' },
+  receita: { pago: '✓ Recebido', pendente: '? A receber', na: '✕ N/A' },
+};
 
 function renderMensal() {
   const dados = dadosAtuais();
   const k = mesChave(UI.ano, UI.mes);
   const t = totaisMes(dados, UI.ano, UI.mes);
+  const saldoClasse = t.saldo >= 0 ? 'ok' : 'neg';
 
   let html = `<div class="resumo-mes">
-    <span>Total do mês: <b>${formatarMoeda(t.total)}</b></span>
+    <span>Receitas: <b class="ok">${formatarMoeda(t.receitaTotal)}</b> · Despesas: <b>${formatarMoeda(t.despesaTotal)}</b></span>
     <span>Pago: <span class="ok">${formatarMoeda(t.pago)}</span> · Pendente: <span class="warn">${formatarMoeda(t.pendente)}</span></span>
+    <span>Saldo do mês: <b class="${saldoClasse}">${formatarMoeda(t.saldo)}</b></span>
     <button class="copiar" onclick="copiarMesAnterior()">📋 Copiar valores do mês anterior</button>
   </div>`;
 
   if (dados.grupos.length === 0) {
     html += `<div class="vazio">
       <div class="vazio-icone">💰</div>
-      <p>Nenhum grupo ainda.<br>Toque em <b>"+ Novo grupo"</b> para começar a lançar as contas deste perfil.</p>
+      <p>Nenhum grupo ainda.<br>Toque em <b>"+ Grupo de despesas"</b> ou <b>"+ Grupo de receitas"</b> para começar a lançar as contas deste perfil.</p>
     </div>`;
   } else {
     dados.grupos.forEach(g => {
+      const tipo = tipoGrupo(g);
+      const rotulos = ROTULOS_STATUS[tipo];
       let subtotal = 0;
       const itensHtml = g.itens.map(it => {
         const c = (it.meses && it.meses[k]) || { valor: '', status: '', nota: '' };
@@ -426,16 +462,16 @@ function renderMensal() {
               onchange="salvarNota('${g.id}','${it.id}', this.value)">
           </div>
           <div class="status-chips">
-            <span class="status-chip pago${c.status === 'pago' ? ' on' : ''}" onclick="definirStatus('${g.id}','${it.id}','pago')">✓ Pago</span>
-            <span class="status-chip pendente${c.status === 'pendente' ? ' on' : ''}" onclick="definirStatus('${g.id}','${it.id}','pendente')">? Pendente</span>
-            <span class="status-chip na${c.status === 'na' ? ' on' : ''}" onclick="definirStatus('${g.id}','${it.id}','na')">✕ N/A</span>
+            <span class="status-chip pago${c.status === 'pago' ? ' on' : ''}" onclick="definirStatus('${g.id}','${it.id}','pago')">${rotulos.pago}</span>
+            <span class="status-chip pendente${c.status === 'pendente' ? ' on' : ''}" onclick="definirStatus('${g.id}','${it.id}','pendente')">${rotulos.pendente}</span>
+            <span class="status-chip na${c.status === 'na' ? ' on' : ''}" onclick="definirStatus('${g.id}','${it.id}','na')">${rotulos.na}</span>
           </div>
         </div>`;
       }).join('');
 
-      html += `<div class="card">
+      html += `<div class="card${tipo === 'receita' ? ' receita' : ''}">
         <div class="grupo-top">
-          <span class="grupo-nome" onclick="renomearGrupo('${g.id}')">${escapar(g.nome)}</span>
+          <span class="grupo-nome" onclick="renomearGrupo('${g.id}')">${escapar(g.nome)}${tipo === 'receita' ? '<span class="tag-receita">Receita</span>' : ''}</span>
           <button class="btn-icone" onclick="excluirGrupo('${g.id}')" title="Excluir grupo">🗑</button>
         </div>
         ${itensHtml}
@@ -445,7 +481,10 @@ function renderMensal() {
     });
   }
 
-  html += `<button class="btn-add" onclick="adicionarGrupo()">＋ Novo grupo</button>`;
+  html += `<div class="grupos-add-row">
+    <button class="btn-add" onclick="adicionarGrupo('despesa')">＋ Grupo de despesas</button>
+    <button class="btn-add receita" onclick="adicionarGrupo('receita')">＋ Grupo de receitas</button>
+  </div>`;
 
   // Saldo em contas
   let totalContas = 0;
@@ -491,11 +530,13 @@ function copiarMesAnterior() {
 }
 
 // ---- ações de grupo/item ----
-function adicionarGrupo() {
-  const nome = prompt('Nome do grupo (ex: Contas fixas, Cartões, Empréstimos):');
+function adicionarGrupo(tipo) {
+  tipo = tipo === 'receita' ? 'receita' : 'despesa';
+  const exemplo = tipo === 'receita' ? 'Salário, MEX, INSS' : 'Contas fixas, Cartões, Empréstimos';
+  const nome = prompt('Nome do grupo de ' + tipo + ' (ex: ' + exemplo + '):');
   if (!nome || !nome.trim()) return;
   const dados = dadosAtuais();
-  dados.grupos.push({ id: uid(), nome: nome.trim(), itens: [] });
+  dados.grupos.push({ id: uid(), nome: nome.trim(), tipo, itens: [] });
   salvarDados(UI.perfilAtivo, dados);
   render();
 }
@@ -631,9 +672,11 @@ function renderAnual() {
     return;
   }
 
-  const totalGrupoMes = new Array(12).fill(0);
+  const despesaMes = new Array(12).fill(0);
+  const receitaMes = new Array(12).fill(0);
 
   dados.grupos.forEach(g => {
+    const tipo = tipoGrupo(g);
     const subtotalMes = new Array(12).fill(0);
     let linhas = '';
     g.itens.forEach(it => {
@@ -652,13 +695,16 @@ function renderAnual() {
       }
       linhas += `<tr><td class="col-nome">${escapar(it.nome)}</td>${cels}</tr>`;
     });
-    for (let m = 0; m < 12; m++) totalGrupoMes[m] += subtotalMes[m];
+    for (let m = 0; m < 12; m++) {
+      if (tipo === 'receita') receitaMes[m] += subtotalMes[m];
+      else despesaMes[m] += subtotalMes[m];
+    }
     const subtotalCels = subtotalMes.map(v => `<td>${formatarMoeda(v)}</td>`).join('');
     linhas += `<tr class="linha-subtotal"><td class="col-nome">Subtotal</td>${subtotalCels}</tr>`;
 
     const cabecMeses = MESES_ABREV.map(m => `<th>${m}</th>`).join('');
     html += `<div class="anual-grupo">
-      <span class="grupo-nome">${escapar(g.nome)}</span>
+      <span class="grupo-nome">${escapar(g.nome)}${tipo === 'receita' ? '<span class="tag-receita">Receita</span>' : ''}</span>
       <div class="tabela-wrap">
         <table class="tabela-anual">
           <thead><tr><th class="col-nome">Item</th>${cabecMeses}</tr></thead>
@@ -668,16 +714,23 @@ function renderAnual() {
     </div>`;
   });
 
-  const totalAno = totalGrupoMes.reduce((a, b) => a + b, 0);
-  const media = totalAno / 12;
-  const linhasResumo = MESES_ABREV.map((m, i) => `<div class="linha"><span>${m}</span><b>${formatarMoeda(totalGrupoMes[i])}</b></div>`).join('');
+  const receitaAno = receitaMes.reduce((a, b) => a + b, 0);
+  const despesaAno = despesaMes.reduce((a, b) => a + b, 0);
+  const saldoAno = receitaAno - despesaAno;
+  const linhasResumo = MESES_ABREV.map((m, i) => {
+    const saldoMes = receitaMes[i] - despesaMes[i];
+    return `<div class="linha"><span>${m}</span><b class="${saldoMes >= 0 ? 'ok' : 'neg'}">${formatarMoeda(saldoMes)}</b></div>`;
+  }).join('');
 
   html += `<div class="anual-total">
     ${linhasResumo}
-    <div class="linha total-geral" style="border-top:1px solid #2a2a44;margin-top:6px;padding-top:10px">
-      <span>Total do ano</span><b>${formatarMoeda(totalAno)}</b>
+    <div class="linha" style="border-top:1px solid #2a2a44;margin-top:6px;padding-top:10px">
+      <span>Total de receitas</span><b class="ok">${formatarMoeda(receitaAno)}</b>
     </div>
-    <div class="linha"><span>Média mensal</span><b>${formatarMoeda(media)}</b></div>
+    <div class="linha"><span>Total de despesas</span><b>${formatarMoeda(despesaAno)}</b></div>
+    <div class="linha total-geral">
+      <span>Saldo do ano</span><b class="${saldoAno >= 0 ? 'ok' : 'neg'}">${formatarMoeda(saldoAno)}</b>
+    </div>
   </div>`;
 
   document.getElementById('conteudo').innerHTML = html;
