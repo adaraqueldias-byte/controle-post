@@ -233,7 +233,7 @@
 
   /* RODAPÉ */
   .rodape {
-    display: flex; align-items: center; justify-content: center; gap: 8px;
+    display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;
     margin-top: 18px; padding-top: 14px; border-top: 1px solid #20203a;
   }
   .rodape-btn {
@@ -241,6 +241,31 @@
     font-size: 13px; padding: 6px 10px; cursor: pointer; border-radius: 8px;
   }
   .rodape-btn:hover { background: #18182c; color: #93c5fd; }
+
+  /* MODAL */
+  .overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.75); z-index: 100;
+    align-items: center; justify-content: center; padding: 20px;
+    backdrop-filter: blur(3px);
+  }
+  .overlay.open { display: flex; }
+  .modal {
+    background: #18182c; border-radius: 18px; padding: 22px;
+    width: 100%; max-width: 420px; border: 1px solid #2a2a44;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal h3 { font-size: 17px; margin-bottom: 10px; color: #fff; }
+  .modal-btns { display: flex; gap: 10px; margin-top: 4px; }
+  .btn-salvar {
+    flex: 1; padding: 13px; background: linear-gradient(135deg,#2563eb,#3b82f6);
+    border: none; border-radius: 10px; color: #fff;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+  .btn-cancelar {
+    flex: 1; padding: 13px; background: #20203a; border: none;
+    border-radius: 10px; color: #a0a0c0; font-size: 15px; cursor: pointer;
+  }
 </style>
 </head>
 <body>
@@ -267,8 +292,21 @@
 
 <div class="rodape">
   <button class="rodape-btn" onclick="fazerBackup()">💾 Backup</button>
-  <button class="rodape-btn" onclick="document.getElementById('inp-restaurar').click()">⬆️ Restaurar</button>
+  <button class="rodape-btn" onclick="document.getElementById('inp-restaurar').click()">⬆️ Restaurar arquivo</button>
+  <button class="rodape-btn" onclick="abrirColarBackup()">📋 Colar backup</button>
   <input type="file" id="inp-restaurar" accept=".json" style="display:none" onchange="restaurarBackup(this)">
+</div>
+
+<div class="overlay" id="overlay-colar">
+  <div class="modal">
+    <h3>Restaurar colando o texto</h3>
+    <p style="font-size:12px;color:#8888b0;margin-bottom:10px">Cole aqui o texto do backup (todo o conteúdo, do <b>{</b> inicial ao <b>}</b> final) e toque em Restaurar.</p>
+    <textarea id="texto-backup" placeholder="Cole aqui..." style="width:100%;min-height:160px;background:#0d0d17;border:1px solid #2a2a44;border-radius:10px;color:#e0e0e0;font-size:12px;padding:10px;margin-bottom:14px;outline:none;resize:vertical"></textarea>
+    <div class="modal-btns">
+      <button class="btn-cancelar" onclick="fecharColarBackup()">Cancelar</button>
+      <button class="btn-salvar" onclick="restaurarDeTexto()">Restaurar</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -752,6 +790,34 @@ function fazerBackup() {
   URL.revokeObjectURL(url);
   alert('💾 Backup salvo no seu aparelho: ' + nome + '\nGuarde esse arquivo em local seguro.');
 }
+function aplicarBackup(tudo) {
+  if (!confirm('Restaurar este backup? Os dados financeiros atuais serão substituídos pelos do arquivo.')) return;
+  Object.keys(localStorage).forEach(k => { if (k.startsWith('fin_')) localStorage.removeItem(k); });
+  Object.keys(tudo).forEach(k => localStorage.setItem(k, tudo[k]));
+  UI = carregarUI();
+  alert('✅ Backup restaurado com sucesso!');
+  render();
+}
+
+function abrirColarBackup() {
+  document.getElementById('texto-backup').value = '';
+  document.getElementById('overlay-colar').classList.add('open');
+}
+function fecharColarBackup() {
+  document.getElementById('overlay-colar').classList.remove('open');
+}
+function restaurarDeTexto() {
+  const texto = document.getElementById('texto-backup').value.trim();
+  if (!texto) { alert('Cole o texto do backup na caixa antes de restaurar.'); return; }
+  try {
+    const tudo = JSON.parse(texto);
+    fecharColarBackup();
+    aplicarBackup(tudo);
+  } catch (err) {
+    alert('Não consegui ler esse texto. Confira se você copiou o backup inteiro, do começo ({) ao fim (}).');
+  }
+}
+
 function restaurarBackup(input) {
   const file = input.files[0];
   if (!file) return;
@@ -759,12 +825,7 @@ function restaurarBackup(input) {
   reader.onload = e => {
     try {
       const tudo = JSON.parse(e.target.result);
-      if (!confirm('Restaurar este backup? Os dados financeiros atuais serão substituídos pelos do arquivo.')) return;
-      Object.keys(localStorage).forEach(k => { if (k.startsWith('fin_')) localStorage.removeItem(k); });
-      Object.keys(tudo).forEach(k => localStorage.setItem(k, tudo[k]));
-      UI = carregarUI();
-      alert('✅ Backup restaurado com sucesso!');
-      render();
+      aplicarBackup(tudo);
     } catch (err) { alert('Arquivo inválido. Use um backup gerado por este app.'); }
   };
   reader.readAsText(file);
